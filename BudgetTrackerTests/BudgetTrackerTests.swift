@@ -47,14 +47,14 @@ struct BudgetTrackerTests {
         
         // Проверка Transaction
         #expect(transaction.id == 0)
-        #expect(transaction.amount == 1000)
+        #expect(transaction.amount == Decimal(1000))
         #expect(transaction.comment == "Покупка продуктов")
         
         // Проверка Account
         #expect(transaction.account.id == 0)
         #expect(transaction.account.userId == 0)
         #expect(transaction.account.name == "Самат")
-        #expect(transaction.account.balance == 20000)
+        #expect(transaction.account.balance == Decimal(20000))
         #expect(transaction.account.currency == "RUB")
         
         // Проверка Category
