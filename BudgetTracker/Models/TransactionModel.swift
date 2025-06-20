@@ -8,13 +8,13 @@
 
 import Foundation
 
-struct Transaction {
+struct Transaction: Identifiable {
     let id: Int
     let account: BankAccount
     let category: Category
     let amount: Decimal
     let trasactionDate: Date
-    let comment: String
+    let comment: String?
     let createdAt: Date
     let updatedAt: Date
     
@@ -23,7 +23,7 @@ struct Transaction {
 extension Transaction {
     
     var jsonObject: Any {
-           let dict: [String: Any] = [
+           var dict: [String: Any] = [
                "id": id,
                "account": [
                    "id": account.id,
@@ -42,10 +42,13 @@ extension Transaction {
                ],
                "amount":  NSDecimalNumber(decimal: amount).intValue,
                "trasactionDate": DateStringConverter.getStringUTC(from: trasactionDate),
-               "comment": comment,
                "createdAt": DateStringConverter.getStringUTC(from: createdAt),
                "updatedAt": DateStringConverter.getStringUTC(from: updatedAt)
            ]
+        
+        if let comment {
+            dict["comment"] = comment
+        }
            
            return dict
        }

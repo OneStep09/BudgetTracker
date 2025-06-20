@@ -32,65 +32,67 @@ final class TransactionsService {
     private lazy var transactions = [
         Transaction(id: 0, account: bankAccount, category: categories[0],
                     amount: 20000,
-                    trasactionDate: DateStringConverter.getDate(from: "2025-06-01T10:34:56.789Z") ?? Date(),
+                    trasactionDate: Date(),
                     comment: "Плата за аренду",
-                    createdAt: DateStringConverter.getDate(from: "2025-06-01T10:34:56.789Z") ?? Date(),
-                    updatedAt: DateStringConverter.getDate(from: "2025-06-01T10:34:56.789Z") ?? Date()),
+                    createdAt: Date(),
+                    updatedAt: Date()),
 
         Transaction(id: 1, account: bankAccount, category: categories[4],
                     amount: 3500,
-                    trasactionDate: DateStringConverter.getDate(from: "2025-06-02T15:20:10.000Z") ?? Date(),
+                    trasactionDate: Date(),
                     comment: "Купил кушатц",
-                    createdAt: DateStringConverter.getDate(from: "2025-06-02T15:20:10.000Z") ?? Date(),
-                    updatedAt: DateStringConverter.getDate(from: "2025-06-02T15:20:10.000Z") ?? Date()),
+                    createdAt: Date(),
+                    updatedAt: Date()),
 
         Transaction(id: 2, account: bankAccount, category: categories[5],
                     amount: 2500,
-                    trasactionDate: DateStringConverter.getDate(from: "2025-06-03T08:00:00.000Z") ?? Date(),
+                    trasactionDate: Date(),
                     comment: "Абонемент в спортзал",
-                    createdAt: DateStringConverter.getDate(from: "2025-06-03T08:00:00.000Z") ?? Date(),
-                    updatedAt: DateStringConverter.getDate(from: "2025-06-03T08:00:00.000Z") ?? Date()),
+                    createdAt: Date(),
+                    updatedAt: Date()),
 
         Transaction(id: 3, account: bankAccount, category: categories[9],
                     amount: 50000,
-                    trasactionDate: DateStringConverter.getDate(from: "2025-06-05T09:00:00.000Z") ?? Date(),
+                    trasactionDate: Date(),
                     comment: "Зарплата за май",
-                    createdAt: DateStringConverter.getDate(from: "2025-06-05T09:00:00.000Z") ?? Date(),
-                    updatedAt: DateStringConverter.getDate(from: "2025-06-05T09:00:00.000Z") ?? Date()),
+                    createdAt: Date(),
+                    updatedAt: Date()),
 
         Transaction(id: 4, account: bankAccount, category: categories[2],
                     amount: 1200,
-                    trasactionDate: DateStringConverter.getDate(from: "2025-06-06T14:15:00.000Z") ?? Date(),
+                    trasactionDate: Date(),
                     comment: "Корм для собачки",
-                    createdAt: DateStringConverter.getDate(from: "2025-06-06T14:15:00.000Z") ?? Date(),
-                    updatedAt: DateStringConverter.getDate(from: "2025-06-06T14:15:00.000Z") ?? Date()),
+                    createdAt: Date(),
+                    updatedAt: Date()),
 
         Transaction(id: 5, account: bankAccount, category: categories[10],
                     amount: 15000,
-                    trasactionDate: DateStringConverter.getDate(from: "2025-06-07T11:11:00.000Z") ?? Date(),
+                    trasactionDate: Date(),
                     comment: "Премия за хорошую работу",
-                    createdAt: DateStringConverter.getDate(from: "2025-06-07T11:11:00.000Z") ?? Date(),
-                    updatedAt: DateStringConverter.getDate(from: "2025-06-07T11:11:00.000Z") ?? Date()),
+                    createdAt: Date(),
+                    updatedAt: Date()),
 
         Transaction(id: 6, account: bankAccount, category: categories[1],
                     amount: 4800,
-                    trasactionDate: DateStringConverter.getDate(from: "2025-06-08T17:30:00.000Z") ?? Date(),
+                    trasactionDate: Date(),
                     comment: "Купил футболку и джинсы",
-                    createdAt: DateStringConverter.getDate(from: "2025-06-08T17:30:00.000Z") ?? Date(),
-                    updatedAt: DateStringConverter.getDate(from: "2025-06-08T17:30:00.000Z") ?? Date()),
+                    createdAt: Date(),
+                    updatedAt: Date()),
 
         Transaction(id: 7, account: bankAccount, category: categories[7],
                     amount: 900,
-                    trasactionDate: DateStringConverter.getDate(from: "2025-06-09T12:00:00.000Z") ?? Date(),
+                    trasactionDate: Date(),
                     comment: "Купил витамины в аптеке",
-                    createdAt: DateStringConverter.getDate(from: "2025-06-09T12:00:00.000Z") ?? Date(),
-                    updatedAt: DateStringConverter.getDate(from: "2025-06-09T12:00:00.000Z") ?? Date())
+                    createdAt: Date(),
+                    updatedAt: Date())
     ]
     
     
-    func fetchTransactions(startDate: Date, endDate: Date) async throws -> [Transaction] {
+    func fetchTransactions(direction: Direction, startDate: Date, endDate: Date) async throws -> [Transaction] {
         return transactions.filter { transaction in
-            transaction.trasactionDate >= startDate && transaction.trasactionDate <= endDate
+            transaction.category.direction == direction &&
+            transaction.trasactionDate >= startDate &&
+            transaction.trasactionDate <= endDate
         }
     }
     

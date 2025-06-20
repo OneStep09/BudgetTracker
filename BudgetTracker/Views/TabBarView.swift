@@ -10,12 +10,12 @@ import SwiftUI
 struct TabBarView: View {
     var body: some View {
         TabView {
-            ExpensesView()
+            TransactionsListView(direction: .outcome)
                 .tabItem {
                     Label("Расходы", image: "expensesTab")
                 }
             
-            IncomeView()
+            TransactionsListView(direction: .income)
                 .tabItem {
                     Label("Доходы", image: "incomeTab")
                 }
