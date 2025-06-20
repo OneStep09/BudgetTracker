@@ -12,8 +12,9 @@ struct TransactionsListView: View {
     var service = TransactionsService()
     @State private var transactions: [Transaction] = []
     @State private var sum: Decimal = 100_000
+    @State private var path = NavigationPath()
     var body: some View {
-            NavigationView {
+        NavigationStack(path: $path) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         
@@ -21,7 +22,7 @@ struct TransactionsListView: View {
                         TransactionsSumView(sum: sum)
                         
                         Text("Операции")
-                            .padding(.horizontal)
+                            .padding(.horizontal, 28)
                             .foregroundStyle(Color.secondary)
                         
                         // Транзакции
@@ -37,14 +38,22 @@ struct TransactionsListView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .padding(.horizontal)
                     }
-                    .padding(.top)
                 }
                 .background(Color(.systemGray6))
-                .navigationTitle("Расходы на сегодня")
+                .navigationTitle(direction == .outcome ? "Расходы сегодня" : "Доходы сегодня")
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationLink(destination: TransactionsHistoryView(direction: direction)) {
+                                              Image(systemName: "clock")
+                    }
+                        
+                    }
+                }
             }
             .onAppear() {
                 getTransations()
             }
+            .tint(Color(.secondary))
         }
     
     

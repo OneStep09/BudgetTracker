@@ -1,5 +1,5 @@
 //
-//  TransactionItemView.swift
+//  Transaction.swift
 //  BudgetTracker
 //
 //  Created by Самат Танкеев on 20.06.2025.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TransactionItemView: View {
+struct HistoryTransactionItemView: View {
     let transaction: Transaction
     var body: some View {
         HStack {
@@ -27,8 +27,13 @@ struct TransactionItemView: View {
             
             Spacer()
             
-            Text("\(transaction.amount) ₽")
-                .font(.body)
+            VStack(spacing: 4) {
+                Text("\(transaction.amount) ₽")
+                    .font(.body)
+                
+                Text("\(DateStringConverter.getString(from: transaction.trasactionDate, formatType: .time))")
+                    .font(.body)
+            }
             
             Image(systemName: "chevron.right")
                 .foregroundStyle(Color.secondary)
