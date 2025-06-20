@@ -15,46 +15,45 @@ struct TransactionsListView: View {
     @State private var path = NavigationPath()
     var body: some View {
         NavigationStack(path: $path) {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        
-                        // Всего
-                        TransactionsSumView(sum: sum)
-                        
-                        Text("Операции")
-                            .padding(.horizontal, 28)
-                            .foregroundStyle(Color.secondary)
-                        
-                        // Транзакции
-                        LazyVStack(spacing: 0) {
-                            ForEach(transactions) { transaction in
-                                TransactionItemView(transaction: transaction)
-                                
-                                Divider()
-                                    .padding(.leading, 48)
-                            }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    
+                    // Всего
+                    TransactionsSumView(sum: sum)
+                    
+                    Text("Операции")
+                        .padding(.horizontal, 28)
+                        .foregroundStyle(Color.secondary)
+                    
+                    // Транзакции
+                    LazyVStack(spacing: 0) {
+                        ForEach(transactions) { transaction in
+                            TransactionItemView(transaction: transaction)
+                            
+                            Divider()
+                                .padding(.leading, 48)
                         }
-                        .background(Color(.systemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .padding(.horizontal)
                     }
+                    .background(Color(.systemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .padding(.horizontal)
                 }
-                .background(Color(.systemGray6))
-                .navigationTitle(direction == .outcome ? "Расходы сегодня" : "Доходы сегодня")
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        NavigationLink(destination: TransactionsHistoryView(direction: direction)) {
-                                              Image(systemName: "clock")
-                    }
-                        
+            }
+            .background(Color(.systemGray6))
+            .navigationTitle(direction == .outcome ? "Расходы сегодня" : "Доходы сегодня")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink(destination: TransactionsHistoryView(direction: direction)) {
+                        Image(systemName: "clock")
                     }
                 }
             }
-            .onAppear() {
-                getTransations()
-            }
-            .tint(Color(.secondary))
         }
+        .onAppear() {
+            getTransations()
+        }
+        .tint(Color(.secondary))
+    }
     
     
     func getTransations() {

@@ -21,10 +21,6 @@ struct TransactionsHistoryView: View {
     var body: some View {
         ScrollView {
             VStack {
-//                // Background color
-//                Color(.systemGray6)
-//                    .ignoresSafeArea()
-                
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(spacing: 8) {
                         DatePicker("Начало", selection: $startDate, displayedComponents: .date)
@@ -64,23 +60,26 @@ struct TransactionsHistoryView: View {
                     .background(Color(.systemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .padding(.horizontal)
-                    
-                    
                 }
-                
-                
             }
         }
         .background(Color(.systemGray6))
-        
         
         .onAppear() {
             getTransations()
         }
         .onChange(of: startDate) {
+            // Если новая дата начала позже конца, обновляем дату начала
+            if startDate > endDate {
+                startDate = endDate
+            }
             getTransations()
         }
         .onChange(of: endDate) {
+            // Если новая дата конца раньше начала, обновляем дату конца
+            if startDate > endDate {
+                endDate = startDate
+            }
             getTransations()
         }
         
