@@ -7,16 +7,51 @@
 
 import SwiftUI
 
+
+
+
 struct TransactionsListView: View {
+    // Parameters 
     var direction: Direction
-    var service = TransactionsService()
+    var service: TransactionsService
+    
+    
+    @State private var sortOption: TransactionSortOption = .date
     @State private var transactions: [Transaction] = []
     @State private var sum: Decimal = 100_000
-    @State private var path = NavigationPath()
+    
+    var selectedSortLabel: String {
+        switch sortOption {
+        case .date: return "дате"
+        case .sum: return "сумме"
+        }
+    }
+    
+    init(direction: Direction, service: TransactionsService = TransactionsService()) {
+        self.direction = direction
+        self.service = service
+    }
+    
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack() {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 12) {
+                    
+                    HStack {
+                        Text("Сортировать по")
+                        Picker("Сортировка", selection: $sortOption) {
+                            ForEach(TransactionSortOption.allCases) { option in
+                                Text(option.rawValue).tag(option)
+                            }
+                        }
+                        .pickerStyle(.menu) // makes it a dropdown menu
+                        .onChange(of: sortOption) {
+                            sortTransactions()
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top)
+
                     
                     // Всего
                     TransactionsSumView(sum: sum)
@@ -77,6 +112,15 @@ struct TransactionsListView: View {
             } catch {
                 print(error.localizedDescription)
             }
+        }
+    }
+    
+    func sortTransactions() {
+        switch sortOption {
+        case .date:
+            transactions = transactions.sorted(by: {$0.trasactionDate < $1.trasactionDate})
+        case .sum:
+            transactions = transactions.sorted(by: {$0.amount < $1.amount})
         }
     }
 }

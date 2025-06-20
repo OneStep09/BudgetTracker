@@ -8,19 +8,44 @@
 import SwiftUI
 
 struct TransactionsHistoryView: View {
+    
+    // Parameters
     var direction: Direction
     
-    var service = TransactionsService()
+    var service: TransactionsService
     
     // State variables
     @State private var transactions: [Transaction] = []
     @State private var startDate = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
     @State private var endDate = Date()
     @State private var sum: Decimal = 0
+    @State private var sortOption: TransactionSortOption = .date
+    
+    
+    init(direction: Direction, service: TransactionsService = TransactionsService()) {
+        self.direction = direction
+        self.service = service
+    
+    }
     
     var body: some View {
         ScrollView {
-            VStack {
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("Сортировать по")
+                    Picker("Сортировка", selection: $sortOption) {
+                        ForEach(TransactionSortOption.allCases) { option in
+                            Text(option.rawValue).tag(option)
+                        }
+                    }
+                    .pickerStyle(.menu) // makes it a dropdown menu
+                    .onChange(of: sortOption) {
+                        sortTransactions()
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top)
+                
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(spacing: 8) {
                         DatePicker("Начало", selection: $startDate, displayedComponents: .date)
@@ -107,6 +132,15 @@ struct TransactionsHistoryView: View {
             } catch {
                 print(error.localizedDescription)
             }
+        }
+    }
+    
+    func sortTransactions() {
+        switch sortOption {
+        case .date:
+            transactions = transactions.sorted(by: {$0.trasactionDate < $1.trasactionDate})
+        case .sum:
+            transactions = transactions.sorted(by: {$0.amount < $1.amount})
         }
     }
     
