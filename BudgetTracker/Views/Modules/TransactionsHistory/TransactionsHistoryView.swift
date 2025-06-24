@@ -31,28 +31,20 @@ struct TransactionsHistoryView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
-                HStack {
-                    Text("Сортировать по")
-                    Picker("Сортировка", selection: $sortOption) {
-                        ForEach(TransactionSortOption.allCases) { option in
-                            Text(option.rawValue).tag(option)
-                        }
-                    }
-                    .pickerStyle(.menu) // makes it a dropdown menu
-                    .onChange(of: sortOption) {
-                        sortTransactions()
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.top)
+              
+
                 
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(spacing: 8) {
-                        DatePicker("Начало", selection: $startDate, displayedComponents: .date)
+                        CustomPickerView(label: "Начало", selectedDate: $startDate)
                         
                         Divider()
                         
-                        DatePicker("Конец", selection: $endDate, displayedComponents: .date)
+                        CustomPickerView(label: "Конец", selectedDate: $endDate)
+                        
+                        Divider()
+                        
+                        TransactionsSortingView(sortOption: $sortOption, sortTransactions: sortTransactions)
                         
                         Divider()
                         
@@ -94,16 +86,16 @@ struct TransactionsHistoryView: View {
             getTransations()
         }
         .onChange(of: startDate) {
-            // Если новая дата начала позже конца, обновляем дату начала
+            // Если новая дата начала позже конца, обновляем дату конца
             if startDate > endDate {
-                startDate = endDate
+                endDate = startDate
             }
             getTransations()
         }
         .onChange(of: endDate) {
-            // Если новая дата конца раньше начала, обновляем дату конца
+            // Если новая дата конца раньше начала, обновляем дату начала
             if startDate > endDate {
-                endDate = startDate
+                startDate = endDate
             }
             getTransations()
         }
@@ -146,6 +138,8 @@ struct TransactionsHistoryView: View {
     
     
 }
+
+
 
 
 #Preview {

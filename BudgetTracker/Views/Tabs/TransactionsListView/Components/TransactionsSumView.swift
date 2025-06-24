@@ -21,9 +21,5 @@ struct TransactionsSumView: View {
                 .font(.body)
                 .foregroundStyle(Color.primary)
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .padding()
     }
 }

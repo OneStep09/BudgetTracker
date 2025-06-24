@@ -11,23 +11,30 @@ struct TransactionItemView: View {
     let transaction: Transaction
     var body: some View {
         HStack {
-            Text(String(transaction.category.emoji))
-                .font(.title2)
+            if transaction.category.direction == .outcome {
+                    Text(String(transaction.category.emoji))
+                        .font(.system(size: 16))
+                        .padding(4)
+                        .background(Color.accent.opacity(0.2))
+                        .clipShape(Circle())
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(transaction.category.name)
                     .font(.body)
                     .lineLimit(1)
                 
-                Text(transaction.category.name)
-                    .font(.footnote)
-                    .foregroundStyle(Color.secondary)
-                    .lineLimit(1)
+                if let comment = transaction.comment {
+                    Text(comment)
+                        .font(.footnote)
+                        .foregroundStyle(Color.secondary)
+                        .lineLimit(1)
+                }
             }
             
             Spacer()
             
-            Text("\(transaction.amount) ₽")
+            Text(transaction.amount.formatted(with: transaction.account.currency))
                 .font(.body)
             
             Image(systemName: "chevron.right")
