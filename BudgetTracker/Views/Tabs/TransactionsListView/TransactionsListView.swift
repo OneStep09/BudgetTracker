@@ -36,25 +36,19 @@ struct TransactionsListView: View {
         NavigationStack() {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    
-                    HStack {
-                        Text("Сортировать по")
-                        Picker("Сортировка", selection: $sortOption) {
-                            ForEach(TransactionSortOption.allCases) { option in
-                                Text(option.rawValue).tag(option)
-                            }
-                        }
-                        .pickerStyle(.menu) // makes it a dropdown menu
-                        .onChange(of: sortOption) {
-                            sortTransactions()
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.top)
+                    VStack(spacing: 12) {
+                        TransactionsSortingView(sortOption: $sortOption, sortTransactions: sortTransactions)
+                        
+                        Divider()
 
-                    
-                    // Всего
-                    TransactionsSumView(sum: sum)
+                        // Всего
+                        TransactionsSumView(sum: sum)
+                    }
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .padding()
+                   
                     
                     Text("Операции")
                         .padding(.horizontal, 28)
