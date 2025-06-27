@@ -17,7 +17,6 @@ struct AccountView: View {
         self.service = service
     }
     
-
     @State private var editedBalance: String = ""
     @State private var editedCurrency: Currency = .usd
     
@@ -49,6 +48,9 @@ struct AccountView: View {
                 }
                 
             }
+            .refreshable { 
+                await fetchAccount()
+            }
             .navigationTitle("Мой счет")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -75,10 +77,6 @@ struct AccountView: View {
         .task {
             await fetchAccount()
         }
-        
-       
-        
-            
     }
     
     private func saveChanges(account: BankAccount) {
@@ -94,11 +92,11 @@ struct AccountView: View {
             
             
             updateAccount(with: newBalance)
-          
+            
             self.state = .sucess(updatedAccount)
         }
         
-      
+        
         self.mode = .view
     }
     
@@ -116,7 +114,7 @@ struct AccountView: View {
     func updateAccount(with balance: Decimal) {
         Task {
             do {
-             try await  service.updateAccount(with: balance)
+                try await  service.updateAccount(with: balance)
             } catch {
                 print(error.localizedDescription)
             }
