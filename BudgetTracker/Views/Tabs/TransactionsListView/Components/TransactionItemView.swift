@@ -34,7 +34,7 @@ struct TransactionItemView: View {
             
             Spacer()
             
-            Text(transaction.amount.formatted(with: transaction.account.currency))
+            Text("\(transaction.amount) \(transaction.account.currency.symbol)")
                 .font(.body)
             
             Image(systemName: "chevron.right")

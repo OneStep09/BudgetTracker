@@ -11,7 +11,7 @@ final class TransactionsService {
                                            userId: 0,
                                            name: "Самат",
                                            balance: 20000,
-                                           currency: "RUB",
+                                               currency: Currency.rub,
                                            createdAt: DateStringConverter.getDate(from: "2025-06-10T12:34:56.789Z") ?? Date(),
                                            updatedAt: DateStringConverter.getDate(from: "2025-06-11T15:12:32.789Z") ?? Date())
     private lazy var categories = [

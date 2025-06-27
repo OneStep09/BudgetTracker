@@ -10,9 +10,9 @@ import Foundation
 final class BankAccountsService {
     private var bankAccount = BankAccount(id: 0,
                               userId: 0,
-                              name: "Самат",
+                              name: "Основной счет",
                               balance: 20000,
-                              currency: "RUB",
+                                          currency: Currency(rawValue: "RUB") ?? Currency.rub,
                               createdAt: DateStringConverter.getDate(from: "2025-06-10T12:34:56.789Z") ?? Date(),
                               updatedAt: DateStringConverter.getDate(from: "2025-06-11T15:12:32.789Z") ?? Date())
     

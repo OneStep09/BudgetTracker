@@ -33,14 +33,14 @@ struct TransactionsListView: View {
     }
     
     var body: some View {
-        NavigationStack() {
+        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(spacing: 12) {
                         TransactionsSortingView(sortOption: $sortOption, sortTransactions: sortTransactions)
                         
                         Divider()
-
+                        
                         // Всего
                         TransactionsSumView(sum: sum)
                     }
@@ -48,7 +48,7 @@ struct TransactionsListView: View {
                     .background(Color(.systemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .padding()
-                   
+                    
                     
                     Text("Операции")
                         .padding(.horizontal, 28)
@@ -68,20 +68,24 @@ struct TransactionsListView: View {
                     .padding(.horizontal)
                 }
             }
+            
             .background(Color(.systemGray6))
+            
             .navigationTitle(direction == .outcome ? "Расходы сегодня" : "Доходы сегодня")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink(destination: TransactionsHistoryView(direction: direction)) {
                         Image(systemName: "clock")
+                        
                     }
                 }
             }
-        }
-        .onAppear() {
-            getTransations()
+            .onAppear() {
+                getTransations()
+            }
         }
         .tint(Color(.secondary))
+        
     }
     
     
