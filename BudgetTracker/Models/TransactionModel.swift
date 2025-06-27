@@ -102,13 +102,15 @@ extension Transaction {
               let userId = accountDict["userId"] as? Int,
               let name = accountDict["name"] as? String,
               let balance = accountDict["balance"] as? Int,
-              let currency = accountDict["currency"] as? String,
+              let currencyStr = accountDict["currency"] as? String,
               let createdAtStr = accountDict["createdAt"] as? String,
               let createdAt = DateStringConverter.getDate(from: createdAtStr),
               let updatedAtStr = accountDict["updatedAt"] as? String,
               let updatedAt = DateStringConverter.getDate(from: updatedAtStr) else {
             return nil
         }
+        
+        let currency = Currency(rawValue: currencyStr) ?? Currency.rub
         
         return BankAccount(id: id, userId: userId, name: name, balance: Decimal(balance), currency: currency, createdAt: createdAt, updatedAt: updatedAt)
     }
@@ -139,7 +141,7 @@ extension Transaction {
             userId: accountUserId,
             name: csvRow[8],
             balance: accountBalance,
-            currency: csvRow[10],
+            currency: Currency(rawValue: csvRow[10]) ?? Currency.rub,
             createdAt: DateStringConverter.getDate(from: csvRow[11]) ?? createdAt,
             updatedAt: DateStringConverter.getDate(from: csvRow[12]) ?? updatedAt
         )

@@ -36,7 +36,7 @@ struct HistoryTransactionItemView: View {
             Spacer()
             
             VStack(spacing: 4) {
-                Text(transaction.amount.formatted(with: transaction.account.currency))
+                Text("\(transaction.amount) \(transaction.account.currency.symbol)")
                     .font(.body)
                 
                 Text(transaction.trasactionDate, style: .time)

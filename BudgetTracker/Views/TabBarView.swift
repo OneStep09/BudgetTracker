@@ -10,30 +10,41 @@ import SwiftUI
 struct TabBarView: View {
     var body: some View {
         TabView {
-            TransactionsListView(direction: .outcome)
-                .tabItem {
-                    Label("Расходы", image: "expensesTab")
-                }
+            NavigationStack {
+                TransactionsListView(direction: .outcome)
+            }
+            .tabItem {
+                Label("Расходы", image: "expensesTab")
+            }
             
-            TransactionsListView(direction: .income)
-                .tabItem {
-                    Label("Доходы", image: "incomeTab")
-                }
+            NavigationStack {
+                TransactionsListView(direction: .income)
+            }
+            .tabItem {
+                Label("Доходы", image: "incomeTab")
+            }
             
-            AccountView()
-                .tabItem {
-                    Label("Счет", image: "accountTab")
-                }
             
-            CategoriesView()
-                .tabItem {
-                    Label("Статьи", image: "categoriesTab")
-                }
+            NavigationStack {
+                AccountView()
+            }
+            .tabItem {
+                Label("Счет", image: "accountTab")
+            }
             
-            SettingsView()
-                .tabItem {
-                    Label("Настройки", image: "settigsTab")
-                }
+            NavigationStack {
+                CategoriesView()
+            }
+            .tabItem {
+                Label("Статьи", image: "categoriesTab")
+            }
+            
+            NavigationStack {
+                SettingsView()
+            }
+            .tabItem {
+                Label("Настройки", image: "settigsTab")
+            }
         }
     }
 }
