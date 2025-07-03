@@ -16,6 +16,7 @@ struct TabBarView: View {
             .tabItem {
                 Label("Расходы", image: "expensesTab")
             }
+            .tint(Color(.secondary))
             
             NavigationStack {
                 TransactionsListView(direction: .income)
@@ -23,6 +24,7 @@ struct TabBarView: View {
             .tabItem {
                 Label("Доходы", image: "incomeTab")
             }
+            .tint(Color(.secondary))
             
             
             NavigationStack {

@@ -18,69 +18,83 @@ struct AccountView: View {
     }
     
     @State private var editedBalance: String = ""
-    @State private var editedCurrency: Currency = .usd
+    @State private var editedCurrency: Currency = .rub
     
     var body: some View {
-        
-        NavigationStack {
-            VStack(spacing: 16) {
-                
-                switch state {
-                case .initial:
-                    EmptyView()
-                case .sucess(let account):
-                    switch mode {
-                    case .view:
-                        AccountInfoView(balance: account.balance, currency: account.currency)
-                    case .edit:
-                        EditAccountView(
-                            balanceText: $editedBalance,
-                            selectedCurrency: $editedCurrency
-                        )
-                    }
-                    
-                case .error(let message):
-                    Text("Произошла ошибка")
-                    
-                    Text(message)
-                case .loading:
-                    Text("Загрузка...")
+        VStack(spacing: 16) {
+            
+            switch state {
+            case .initial:
+                EmptyView()
+            case .sucess(let account):
+                switch mode {
+                case .view:
+                    AccountInfoView(balance: account.balance, currency: account.currency)
+                case .edit:
+                    EditAccountView(
+                        balanceText: $editedBalance,
+                        selectedCurrency: $editedCurrency
+                    )
                 }
                 
+            case .error(let message):
+                Text("Произошла ошибка")
+                
+                Text(message)
+            case .loading:
+                Text("Загрузка...")
             }
-            .refreshable { 
-                await fetchAccount()
-            }
-            .navigationTitle("Мой счет")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    if case .sucess(let account) = state {
-                        if mode == .view {
-                            Button("Редактировать") {
-                                editedBalance = account.balance.formatted()
-                                editedCurrency = account.currency
-                                mode = .edit
-                            }
-                        } else {
-                            Button("Сохранить") {
-                                saveChanges(account: account)
-                            }
+            
+        }
+        .refreshable {
+            await fetchAccount()
+        }
+        .navigationTitle("Мой счет")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if case .sucess(let account) = state {
+                    if mode == .view {
+                        Button("Редактировать") {
+                            
+                            
+                            editedBalance = numberFormatter.string(from: account.balance as NSDecimalNumber) ?? "0"
+                            editedCurrency = account.currency
+                            mode = .edit
+                        }
+                    } else {
+                        Button("Сохранить") {
+                            saveChanges(account: account)
                         }
                     }
                 }
             }
-            .background(Color(.systemGray6))
-            .tint(Color(.secondary))
-            
         }
+        .background(Color(.systemGray6))
+        .tint(Color(.secondary))
         
         .task {
             await fetchAccount()
         }
     }
     
+    
+    let numberFormatter: NumberFormatter = {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.maximumFractionDigits = 2
+        numberFormatter.groupingSeparator = " "
+        numberFormatter.decimalSeparator = "."
+        return numberFormatter
+    }()
+    
     private func saveChanges(account: BankAccount) {
-        if let newBalance = Decimal(string: editedBalance) {
+        
+        let formatted = editedBalance
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: ",", with: ".")
+        
+        
+        if let newBalance = Decimal(string: formatted) {
             let updatedAccount = BankAccount(
                 id: account.id,
                 userId: account.userId,
@@ -95,8 +109,6 @@ struct AccountView: View {
             
             self.state = .sucess(updatedAccount)
         }
-        
-        
         self.mode = .view
     }
     
@@ -121,6 +133,8 @@ struct AccountView: View {
         }
         
     }
+    
+    
 }
 
 enum AccountViewState {

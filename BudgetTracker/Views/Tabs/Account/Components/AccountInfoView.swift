@@ -20,7 +20,7 @@ struct AccountInfoView: View {
                 
                 Spacer()
                 
-                Text("\(balance)")
+                Text(balance.formatted())
                     .foregroundStyle(Color.graylish)
             }
             .padding()

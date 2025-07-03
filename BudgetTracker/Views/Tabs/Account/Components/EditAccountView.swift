@@ -11,7 +11,7 @@ struct EditAccountView: View {
     @Binding var balanceText: String
     @Binding var selectedCurrency: Currency
     
-
+    
     @State private var showCurrencySelection = false
     
     var body: some View {
@@ -24,11 +24,20 @@ struct EditAccountView: View {
                 
                 Spacer()
                 
-                TextField("", text: $balanceText)
-                    .frame(minWidth: 100)
-                    .multilineTextAlignment(.trailing)
-                    .keyboardType(.numberPad)
-                    .scrollDismissesKeyboard(.immediately)
+                TextField("", text: Binding(
+                    get: { balanceText },
+                    set: { newValue in
+                        let filtered = newValue.filter { "0123456789., ".contains($0) }
+                        let dots = filtered.filter { $0 == "." || $0 == "," }
+                        if dots.count <= 1 {
+                            balanceText = filtered
+                        }
+                    }
+                ))
+                .frame(minWidth: 100)
+                .multilineTextAlignment(.trailing)
+                .keyboardType(.numberPad)
+                .scrollDismissesKeyboard(.immediately)
             }
             .padding()
             .background(Color(.systemBackground))
@@ -40,7 +49,7 @@ struct EditAccountView: View {
                 
                 Spacer()
                 
-               
+                
                 HStack {
                     Text(selectedCurrency.symbol)
                     Image(systemName: "chevron.right")
@@ -57,6 +66,7 @@ struct EditAccountView: View {
             .padding(.horizontal)
             
             Spacer()
+            
         }
         
         .confirmationDialog(
@@ -70,7 +80,7 @@ struct EditAccountView: View {
                         selectedCurrency = currency
                     }
                 }
-            
+                
             }
         }
     }
