@@ -17,15 +17,18 @@ struct CategoriesView: View {
     
     
     private var filteredCategories: [Category] {
-          if searchText.isEmpty {
-              return categories
-          } else {
-              return categories.filter { category in
-                  category.name.localizedCaseInsensitiveContains(searchText)
-              }
-          }
-      }
-    
+         if searchText.isEmpty {
+             return categories
+         } else {
+             return categories
+                 .compactMap { category in
+                     let score = fuzzySearchScore(for: category.name, searchText: searchText)
+                     return score > 0 ? (category, score) : nil
+                 }
+                 .sorted { $0.1 > $1.1 } // Sort by score (highest first)
+                 .map { $0.0 } // Extract categories
+         }
+     }
     
     private let service: CategoriesService
     private let direction: Direction
@@ -133,6 +136,76 @@ struct CategoriesView: View {
         
         isLoading = false
     }
+    
+    
+    // Вычисляет наколько две строки похожи
+    private func fuzzySearchScore(for text: String, searchText: String) -> Double {
+        let text = text.lowercased()
+        let search = searchText.lowercased()
+        
+        // Если одинаковые возвращает максимум
+        if text == search {
+            return 4
+        }
+        
+        // Если одинаковое начало
+        if text.hasPrefix(search) {
+            return 3
+        }
+        
+        
+        // Если содержит
+        if text.contains(search) {
+            return 2
+        }
+        
+        // Вычисление дистанции
+        let distance = levenshteinDistance(text, search)
+        let maxLength = max(text.count, search.count)
+        
+        
+        // Если дистанция слишком большая
+        if distance > maxLength / 2 {
+            return 0.0
+        }
+        
+        // 700 это будет basescore
+        let similarity = 1.0 - (Double(distance) / Double(maxLength))
+        return similarity
+    }
+      
+      /// Вычисляет расстояние Левенштейна между двумя строками
+      private func levenshteinDistance(_ s1: String, _ s2: String) -> Int {
+          let s1Array = Array(s1)
+          let s2Array = Array(s2)
+          let s1Count = s1Array.count
+          let s2Count = s2Array.count
+          
+         
+          var matrix = Array(repeating: Array(repeating: 0, count: s2Count + 1), count: s1Count + 1)
+          
+       
+          for i in 0...s1Count {
+              matrix[i][0] = i
+          }
+          for j in 0...s2Count {
+              matrix[0][j] = j
+          }
+          
+    
+          for i in 1...s1Count {
+              for j in 1...s2Count {
+                  let cost = s1Array[i - 1] == s2Array[j - 1] ? 0 : 1
+                  matrix[i][j] = min(
+                      matrix[i - 1][j] + 1,      // Удаление символа
+                      matrix[i][j - 1] + 1,      // Добавление
+                      matrix[i - 1][j - 1] + cost // Замена
+                  )
+              }
+          }
+          
+          return matrix[s1Count][s2Count]
+      }
 }
 
 #Preview {
