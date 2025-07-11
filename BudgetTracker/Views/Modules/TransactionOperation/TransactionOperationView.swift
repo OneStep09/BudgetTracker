@@ -113,6 +113,9 @@ struct TransactionOperationView: View {
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
                 .frame(minWidth: 100)
+                .onChange(of: model.amountText) { oldValue, newValue in
+                    model.amountText = model.formatAmountInput(newValue)
+                }
             
             Text("₽")
                 .foregroundColor(.secondary)
@@ -125,7 +128,7 @@ struct TransactionOperationView: View {
                 .foregroundColor(.primary)
             Spacer()
             
-            DatePicker("", selection: $model.selectedDate, displayedComponents: .date)
+            DatePicker("", selection: $model.selectedDate, in: Date()..., displayedComponents: .date)
                 .labelsHidden()
                 .background(.accent.opacity(0.2))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -203,6 +206,8 @@ struct TransactionOperationView: View {
         }
     }
 }
+
+// MARK: - Helper Methods
 
 enum TransactionOperation {
     case create

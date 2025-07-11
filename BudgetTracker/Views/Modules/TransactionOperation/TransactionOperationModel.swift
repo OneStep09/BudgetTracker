@@ -183,4 +183,30 @@ final class TransactionOperationModel {
             print("Ошибка удаления транзакции: \(error)")
         }
     }
+    
+    
+    
+    func formatAmountInput(_ input: String) -> String {
+        let decimalSeparator = Locale.current.decimalSeparator ?? "."
+        let allowedChars = "0123456789" + decimalSeparator
+        
+        let filtered = input.filter { allowedChars.contains($0) }
+        let separators = filtered.filter { String($0) == decimalSeparator }
+        
+        if separators.count <= 1 {
+            // разделитель может быть только один
+            if let separatorIndex = filtered.firstIndex(of: Character(decimalSeparator)) {
+                let beforeSeparator = String(filtered[..<separatorIndex])
+                let afterSeparator = String(filtered[filtered.index(after: separatorIndex)...])
+                
+                if afterSeparator.count > 2 {
+                    // Ограничиваем количество цифр после разделителя до 2
+                    return beforeSeparator + decimalSeparator + String(afterSeparator.prefix(2))
+                }
+            }
+            return filtered
+        }
+        
+        return amountText // если введено больше одного разделителя, возвращаем предыдушее значение
+    }
 }
