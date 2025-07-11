@@ -15,10 +15,11 @@ struct TransactionsListView: View {
     var direction: Direction
     var service: TransactionsService
     
-    
     @State private var sortOption: TransactionSortOption = .date
     @State private var transactions: [Transaction] = []
     @State private var sum: Decimal = 100_000
+    @State private var showTransactionOperation: Bool = false
+    @State private var selectedTransaction: Transaction? = nil
     
     var selectedSortLabel: String {
         switch sortOption {
@@ -33,59 +34,106 @@ struct TransactionsListView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    VStack(spacing: 12) {
-                        TransactionsSortingView(sortOption: $sortOption, sortTransactions: sortTransactions)
-                        
-                        Divider()
-                        
-                        // Всего
-                        TransactionsSumView(sum: sum)
-                    }
-                    .padding()
-                    .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .padding()
-                    
-                    
-                    Text("Операции")
-                        .padding(.horizontal, 28)
-                        .foregroundStyle(Color.secondary)
-                    
-                    // Транзакции
-                    LazyVStack(spacing: 0) {
-                        ForEach(transactions) { transaction in
-                            TransactionItemView(transaction: transaction)
-                            
-                            Divider()
-                                .padding(.leading, 48)
-                        }
-                    }
-                    .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .padding(.horizontal)
+                    header
+                    transactionsList
                 }
             }
-            
-            .background(Color(.systemGray6))
-            
-            .navigationTitle(direction == .outcome ? "Расходы сегодня" : "Доходы сегодня")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink(destination: TransactionsHistoryView(direction: direction)) {
-                        Image(systemName: "clock")
-                        
-                    }
+            plusButton
+        }
+        .background(Color(.systemGray6))
+        .navigationTitle(direction == .outcome ? "Расходы сегодня" : "Доходы сегодня")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(destination: TransactionsHistoryView(direction: direction)) {
+                    Image(systemName: "clock")
                 }
             }
-            .onAppear() {
+        }
+        .onAppear() {
+            getTransations()
+        }
+    
+        .fullScreenCover(isPresented: $showTransactionOperation) {
+            TransactionOperationView(
+                model: TransactionOperationModel(
+                    direction: direction,
+                    existingTransaction: selectedTransaction,
+                    transactionsService: service
+                )
+            )
+            .onDisappear {
                 getTransations()
             }
         }
-        .tint(Color(.secondary))
-        
+    }
+    
+    
+    private var header: some View {
+        VStack(spacing: 12) {
+            TransactionsSortingView(sortOption: $sortOption, sortTransactions: sortTransactions)
+            
+            Divider()
+            
+            // Всего
+            TransactionsSumView(sum: sum)
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding()
+    }
+    
+    private var transactionsList: some View {
+        Section("Операции") {
+            // Транзакции
+            LazyVStack(spacing: 0) {
+                ForEach(transactions) { transaction in
+                    TransactionItemView(transaction: transaction)
+                        .onTapGesture {
+                            selectedTransaction = transaction
+                            showTransactionOperation = true
+                        }
+    
+                    
+                    Divider()
+                        .padding(.leading, 48)
+                }
+            }
+            .background(Color(.systemBackground))
+            .foregroundStyle(Color.primary)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+            .padding(.horizontal)
+            .foregroundStyle(Color.secondary)
+    }
+    
+    
+    private var plusButton: some View {
+        VStack {
+            Spacer()
+            HStack {
+                
+                
+                Spacer()
+                
+                Button {
+                    showTransactionOperation = true
+                } label: {
+                    Image(systemName: "plus")
+                        .resizable()
+                        .frame(width: 16, height: 16, alignment: .trailing)
+                        .tint(Color.white)
+                        .padding(20)
+                        .background(Color.accent)
+                        .clipShape(Circle())
+                        .padding(.trailing, 16)
+                        .padding(.bottom, 28)
+                }
+            }
+        }
     }
     
     

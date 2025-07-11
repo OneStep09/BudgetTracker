@@ -119,10 +119,6 @@ struct CategoriesView: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
     
-  
-    
-  
-    
     private func fetchCategories() async {
         isLoading = true
         errorMessage = nil
