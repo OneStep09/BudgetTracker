@@ -75,112 +75,110 @@ final class TransactionOperationModel {
         }
     }
     
-    // MARK: - Transaction Operations
+ 
     
-    func createTransaction() async {
+    func createTransaction() {
         guard let selectedCategory = selectedCategory,
               canCreateTransaction else {
-            print("Невозможно создать транзакцию: недостаточно данных")
+            print("Missing required fields for transaction creation")
             return
         }
         
-        do {
-            let bankAccount = try await bankAccountsService.fetchAccount()
-            
-            let newTransaction = Transaction(
-                id: Int.random(in: 1000...9999),
-                account: bankAccount,
-                category: selectedCategory,
-                amount: amount,
-                trasactionDate: selectedDate,
-                comment: comment.isEmpty ? nil : comment,
-                createdAt: Date(),
-                updatedAt: Date()
-            )
-            
-            try await transactionsService.addTransaction(transaction: newTransaction)
-            
-            // Update account balance
-            let newBalance = selectedCategory.direction == .income ?
-                bankAccount.balance + amount :
-                bankAccount.balance - amount
-            
-            try await bankAccountsService.updateAccount(with: newBalance)
-            
-            print("Транзакция успешно создана")
-            
-        } catch {
-            print("Ошибка создания транзакции: \(error)")
+        Task {
+            do {
+                let bankAccount = try await bankAccountsService.fetchAccount()
+                
+                let newBalance = selectedCategory.direction == .income ?
+                    bankAccount.balance + amount :
+                    bankAccount.balance - amount
+                
+                let newTransaction = Transaction(
+                    id: Int.random(in: 1000...9999),
+                    account: bankAccount,
+                    category: selectedCategory,
+                    amount: amount,
+                    trasactionDate: selectedDate,
+                    comment: comment.isEmpty ? nil : comment,
+                    createdAt: Date(),
+                    updatedAt: Date()
+                )
+                
+                try await transactionsService.addTransaction(transaction: newTransaction)
+                try await bankAccountsService.updateAccount(with: newBalance)
+                
+            } catch {
+                print("Transaction creation failed: \(error.localizedDescription)")
+            }
         }
     }
     
-    func updateTransaction() async {
+    func updateTransaction() {
         guard let existingTransaction = existingTransaction,
               let selectedCategory = selectedCategory,
               canCreateTransaction else {
-            print("Невозможно обновить транзакцию: недостаточно данных")
+            print("Missing required fields for transaction update")
             return
         }
         
-        do {
-            let bankAccount = try await bankAccountsService.fetchAccount()
-            
-            // Revert the old transaction's effect on balance
-            let oldAmount = existingTransaction.amount
-            let oldDirection = existingTransaction.category.direction
-            let revertedBalance = oldDirection == .income ?
-                bankAccount.balance - oldAmount :
-                bankAccount.balance + oldAmount
-            
-            // Apply the new transaction's effect on balance
-            let newBalance = selectedCategory.direction == .income ?
-                revertedBalance + amount :
-                revertedBalance - amount
-            
-            let updatedTransaction = Transaction(
-                id: existingTransaction.id,
-                account: bankAccount,
-                category: selectedCategory,
-                amount: amount,
-                trasactionDate: selectedDate,
-                comment: comment.isEmpty ? nil : comment,
-                createdAt: existingTransaction.createdAt,
-                updatedAt: Date()
-            )
-            
-            try await transactionsService.updateTransaction(transaction: updatedTransaction)
-            try await bankAccountsService.updateAccount(with: newBalance)
-            
-            print("Транзакция успешно обновлена")
-            
-        } catch {
-            print("Ошибка обновления транзакции: \(error)")
+        Task {
+            do {
+                let bankAccount = try await bankAccountsService.fetchAccount()
+                
+                // Revert the old transaction's effect on balance
+                let oldAmount = existingTransaction.amount
+                let oldDirection = existingTransaction.category.direction
+                let revertedBalance = oldDirection == .income ?
+                    bankAccount.balance - oldAmount :
+                    bankAccount.balance + oldAmount
+                
+                // Apply the new transaction's effect on balance
+                let newBalance = selectedCategory.direction == .income ?
+                    revertedBalance + amount :
+                    revertedBalance - amount
+                
+                let updatedTransaction = Transaction(
+                    id: existingTransaction.id,
+                    account: bankAccount,
+                    category: selectedCategory,
+                    amount: amount,
+                    trasactionDate: selectedDate,
+                    comment: comment.isEmpty ? nil : comment,
+                    createdAt: existingTransaction.createdAt,
+                    updatedAt: Date()
+                )
+                
+                try await transactionsService.updateTransaction(transaction: updatedTransaction)
+                try await bankAccountsService.updateAccount(with: newBalance)
+                
+            } catch {
+                print("Transaction update failed: \(error.localizedDescription)")
+            }
         }
     }
     
-    func deleteTransaction() async {
+    func deleteTransaction() {
         guard let existingTransaction = existingTransaction else {
-            print("Нет транзакции для удаления")
+            print("No transaction to delete")
             return
         }
         
-        do {
-            let bankAccount = try await bankAccountsService.fetchAccount()
-            
-            // Revert the transaction's effect on balance
-            let amount = existingTransaction.amount
-            let direction = existingTransaction.category.direction
-            let newBalance = direction == .income ?
-                bankAccount.balance - amount :
-                bankAccount.balance + amount
-            
-            try await transactionsService.removeTransaction(transaction: existingTransaction)
-            try await bankAccountsService.updateAccount(with: newBalance)
-            
-            print("Транзакция успешно удалена")
-            
-        } catch {
-            print("Ошибка удаления транзакции: \(error)")
+        Task {
+            do {
+                let bankAccount = try await bankAccountsService.fetchAccount()
+                
+                // Revert the transaction's effect on balance
+                let amount = existingTransaction.amount
+                let direction = existingTransaction.category.direction
+                let newBalance = direction == .income ?
+                    bankAccount.balance - amount :
+                    bankAccount.balance + amount
+                
+                try await transactionsService.removeTransaction(transaction: existingTransaction)
+                try await bankAccountsService.updateAccount(with: newBalance)
+                
+            } catch {
+                print("Transaction deletion failed: \(error.localizedDescription)")
+            }
         }
     }
     
@@ -207,6 +205,31 @@ final class TransactionOperationModel {
             return filtered
         }
         
-        return amountText // если введено больше одного разделителя, возвращаем предыдушее значение
+        return amountText // если введено больше одного разделителя, возвращаем старое значение
+    }
+    
+    // MARK: - Error Types
+    
+    enum TransactionError: LocalizedError {
+        case missingRequiredFields
+        case creationFailed(String)
+        case updateFailed(String)
+        case deletionFailed(String)
+        case noTransactionToDelete
+        
+        var errorDescription: String? {
+            switch self {
+            case .missingRequiredFields:
+                return "Нужно заполнить все обязательные поля"
+            case .creationFailed(let message):
+                return "Ошибка создания транзакции: \(message)"
+            case .updateFailed(let message):
+                return "Ошибка обновления транзакции: \(message)"
+            case .deletionFailed(let message):
+                return "Ошибка удаления транзакции: \(message)"
+            case .noTransactionToDelete:
+                return "Нет транзакции для удаления"
+            }
+        }
     }
 }

@@ -11,8 +11,7 @@ import SwiftUI
 struct TransactionOperationView: View {
     @State var model: TransactionOperationModel
     @Environment(\.dismiss) private var dismiss
-    
-    
+    @State private var showValidationAlert = false
     
     init(model: TransactionOperationModel) {
         self.model = model
@@ -46,13 +45,16 @@ struct TransactionOperationView: View {
         .alert("Удалить транзакцию?", isPresented: $model.showDeleteAlert) {
             Button("Отмена", role: .cancel) { }
             Button("Удалить", role: .destructive) {
-                Task {
-                    await model.deleteTransaction()
-                    dismiss()
-                }
+                model.deleteTransaction()
+                dismiss()
             }
         } message: {
             Text("Это действие нельзя отменить")
+        }
+        .alert("Не все поля заполены", isPresented: $showValidationAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Нужно заполнить все обязательные поля")
         }
     }
     
@@ -64,7 +66,7 @@ struct TransactionOperationView: View {
                 actionButton
             }
             
-            Text("Мои расходы")
+            Text(title)
                 .font(.largeTitle)
                 .fontWeight(.bold)
         }
@@ -158,8 +160,8 @@ struct TransactionOperationView: View {
         Button(action: {
             model.showDeleteAlert = true
         }) {
-                Text("Удалить")
-            .foregroundColor(.red)
+            Text("Удалить")
+                .foregroundColor(.red)
         }
     }
     
@@ -173,17 +175,21 @@ struct TransactionOperationView: View {
     
     private var actionButton: some View {
         Button(actionButtonTitle) {
-            Task {
-                switch model.type {
-                case .create:
-                    await model.createTransaction()
-                case .edit:
-                    await model.updateTransaction()
-                }
-                dismiss()
+            // Check validation first
+            guard model.canCreateTransaction else {
+                showValidationAlert = true
+                return
             }
+            
+            switch model.type {
+            case .create:
+                model.createTransaction()
+            case .edit:
+                model.updateTransaction()
+            }
+            
+            dismiss()
         }
-        .disabled(!model.canCreateTransaction)
     }
     
     // MARK: - Computed Properties
