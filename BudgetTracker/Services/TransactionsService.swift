@@ -9,7 +9,7 @@ import Foundation
 final class TransactionsService {
     private lazy var bankAccount = BankAccount(id: 0,
                                            userId: 0,
-                                           name: "Самат",
+                                           name: "Основной аккаут",
                                            balance: 20000,
                                                currency: Currency.rub,
                                            createdAt: DateStringConverter.getDate(from: "2025-06-10T12:34:56.789Z") ?? Date(),

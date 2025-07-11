@@ -20,7 +20,7 @@ struct TransactionsHistoryView: View {
     @State private var endDate = Date()
     @State private var sum: Decimal = 0
     @State private var sortOption: TransactionSortOption = .date
-    
+    @State var isAnalysisPresented: Bool = false
     
     init(direction: Direction, service: TransactionsService = TransactionsService()) {
         self.direction = direction
@@ -31,9 +31,6 @@ struct TransactionsHistoryView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
-              
-
-                
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(spacing: 8) {
                         CustomPickerView(label: "Начало", selectedDate: $startDate)
@@ -101,6 +98,18 @@ struct TransactionsHistoryView: View {
         }
         
         .navigationTitle("Моя история")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink(destination: 
+                    AnalysisViewControllerWrapper(direction: direction)
+                        .navigationTitle("Анализ")
+//                        .navigationBarTitleDisplayMode(.large)
+                        .ignoresSafeArea(.all)
+                ) {
+                    Image(systemName: "doc")
+                }
+            }
+        }
     }
     
     
