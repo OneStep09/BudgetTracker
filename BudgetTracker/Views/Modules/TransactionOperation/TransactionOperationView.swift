@@ -130,7 +130,7 @@ struct TransactionOperationView: View {
                 .foregroundColor(.primary)
             Spacer()
             
-            DatePicker("", selection: $model.selectedDate, in: Date()..., displayedComponents: .date)
+            DatePicker("", selection: $model.selectedDate, in: ...Date(), displayedComponents: .date)
                 .labelsHidden()
                 .background(.accent.opacity(0.2))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
