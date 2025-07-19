@@ -83,17 +83,17 @@ class AnalysisViewController: UIViewController {
             }
             .store(in: &cancellables)
         
-        viewModel.$error
+        viewModel.$errorMessage
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] error in
-                self?.showError(error)
+            .sink { [weak self] message in
+                self?.showError(message)
             }
             .store(in: &cancellables)
     }
     
-    private func showError(_ error: Error) {
-        let alert = UIAlertController(title: "Ошибка", message: error.localizedDescription, preferredStyle: .alert)
+    private func showError(_ message: String) {
+        let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }

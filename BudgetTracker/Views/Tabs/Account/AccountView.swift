@@ -8,147 +8,101 @@
 import SwiftUI
 
 struct AccountView: View {
+    @State private var model: AccountModel
     
-    let service: BankAccountsService
-    @State var state: AccountViewState = .initial
-    @State var mode: AccountViewMode = .view
+//    init(service: BankAccountsService = BankAccountsServiceImpl()) {
+//        self._model = State(initialValue: AccountModel(bankAccountsService: service))
+//    }
     
-    init(service: BankAccountsService = BankAccountsService()) {
-        self.service = service
+    init(model: AccountModel) {
+        self.model = model
     }
-    
-    @State private var editedBalance: String = ""
-    @State private var editedCurrency: Currency = .rub
     
     var body: some View {
         VStack(spacing: 16) {
-            
-            switch state {
+            switch model.state {
             case .initial:
                 EmptyView()
-            case .sucess(let account):
-                switch mode {
-                case .view:
-                    AccountInfoView(balance: account.balance, currency: account.currency)
-                case .edit:
-                    EditAccountView(
-                        balanceText: $editedBalance,
-                        selectedCurrency: $editedCurrency
-                    )
-                }
-                
-            case .error(let message):
-                Text("Произошла ошибка")
-                
-                Text(message)
             case .loading:
-                Text("Загрузка...")
+                ProgressView()
+                    .frame(width: 100, height: 100)
+            case .success(let account):
+                accountContent(account: account)
+            case .error(let message):
+                errorView(message: message)
             }
-            
         }
         .refreshable {
-            await fetchAccount()
+            await model.refreshAccount()
         }
         .navigationTitle("Мой счет")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                if case .sucess(let account) = state {
-                    if mode == .view {
-                        Button("Редактировать") {
-                            
-                            
-                            editedBalance = numberFormatter.string(from: account.balance as NSDecimalNumber) ?? "0"
-                            editedCurrency = account.currency
-                            mode = .edit
-                        }
-                    } else {
-                        Button("Сохранить") {
-                            saveChanges(account: account)
-                        }
-                    }
-                }
+                toolbarButton
             }
         }
         .background(Color(.systemGray6))
         .tint(Color(.secondary))
-        
-        .task {
-            await fetchAccount()
+        .onAppear {
+            model.onViewAppear()
         }
-    }
-    
-    
-    let numberFormatter: NumberFormatter = {
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .decimal
-        numberFormatter.maximumFractionDigits = 2
-        numberFormatter.groupingSeparator = " "
-        numberFormatter.decimalSeparator = "."
-        return numberFormatter
-    }()
-    
-    private func saveChanges(account: BankAccount) {
-        
-        let formatted = editedBalance
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: ",", with: ".")
-        
-        
-        if let newBalance = Decimal(string: formatted) {
-            let updatedAccount = BankAccount(
-                id: account.id,
-                userId: account.userId,
-                name: account.name,
-                balance: newBalance,
-                currency: editedCurrency,
-                createdAt: account.createdAt,
-                updatedAt: account.updatedAt)
-            
-            
-            updateAccount(with: newBalance)
-            
-            self.state = .sucess(updatedAccount)
-        }
-        self.mode = .view
-    }
-    
-    func fetchAccount() async {
-        do {
-            let account = try await service.fetchAccount()
-            await MainActor.run {
-                self.state = .sucess(account)
+        .alert("Ошибка", isPresented: .constant(model.errorMessage != nil)) {
+            Button("OK") {
+                model.errorMessage = nil
             }
-        } catch {
-            state = .error(error.localizedDescription)
-        }
-    }
-    
-    func updateAccount(with balance: Decimal) {
-        Task {
-            do {
-                try await  service.updateAccount(with: balance)
-            } catch {
-                print(error.localizedDescription)
+        } message: {
+            if let errorMessage = model.errorMessage {
+                Text(errorMessage)
             }
         }
-        
     }
     
+    @ViewBuilder
+    private func accountContent(account: BankAccount) -> some View {
+        switch model.mode {
+        case .view:
+            AccountInfoView(balance: account.balance, currency: account.currency)
+        case .edit:
+            EditAccountView(
+                balanceText: $model.editedBalance,
+                selectedCurrency: $model.editedCurrency
+            )
+        }
+    }
     
-}
-
-enum AccountViewState {
-    case initial
-    case sucess(BankAccount)
-    case error(String)
-    case loading
-}
-
-enum AccountViewMode {
-    case view
-    case edit
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 8) {
+            Text("Произошла ошибка")
+                .font(.headline)
+            Text(message)
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    @ViewBuilder
+    private var toolbarButton: some View {
+        if case .success(_) = model.state {
+            switch model.mode {
+            case .view:
+                Button("Редактировать") {
+                    model.startEditing()
+                }
+            case .edit:
+                HStack {
+                    Button("Отмена") {
+                        model.cancelEditing()
+                    }
+                    
+                    Button("Сохранить") {
+                        model.saveChanges()
+                    }
+                    .disabled(!model.canSave)
+                }
+            }
+        }
+    }
 }
 
 #Preview {
-    AccountView()
+    AccountView(model: AccountModel())
 }

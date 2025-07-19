@@ -11,7 +11,10 @@ import SwiftUI
 struct BudgetTrackerApp: App {
     var body: some Scene {
         WindowGroup {
-            TabBarView()
+            TabBarView(transactionsOutcomeModel: TransactionsListModel(direction: .outcome),
+                       transactionsIncomeModel: TransactionsListModel(direction: .income),
+                       accountModel: AccountModel(),
+                       categoriesModel: CategoriesModel())
         }
     }
 }

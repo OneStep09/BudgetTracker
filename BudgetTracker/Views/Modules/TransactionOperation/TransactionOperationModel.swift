@@ -15,10 +15,12 @@ final class TransactionOperationModel {
     var selectedDate: Date = Date()
     var comment: String = ""
     var showDeleteAlert: Bool = false
+    var errorMessage: String?
     
     var existingTransaction: Transaction?
     var direction: Direction
     var type: TransactionOperation = .create
+    private var bankAccount: BankAccount?
     
     private let categoriesService: CategoriesService
     private let transactionsService: TransactionsService
@@ -43,9 +45,9 @@ final class TransactionOperationModel {
     
     init(direction: Direction,
         existingTransaction: Transaction? = nil,
-         cateogiresService: CategoriesService = CategoriesService(),
-         transactionsService: TransactionsService = TransactionsService(),
-         bankAccountService: BankAccountsService = BankAccountsService()
+         cateogiresService: CategoriesService = CategoriesServiceImpl(),
+         transactionsService: TransactionsService = TransactionsServiceImpl(),
+         bankAccountService: BankAccountsService = BankAccountsServiceImpl()
     ) {
         self.direction = direction
         self.existingTransaction = existingTransaction
@@ -67,117 +69,83 @@ final class TransactionOperationModel {
     
     // MARK: - Data Loading
     
+    func onAppear() {
+        Task {
+            await loadBankAccount()
+            await loadCategories()
+        }
+    }
+    
     func loadCategories() async {
         do {
-            categories = try await categoriesService.fetchAllCategoires()
+            let loadedCategories = try await categoriesService.fetchAllCategoires()
+            self.categories = loadedCategories.filter{$0.direction == direction}
         } catch {
-            print("Ошибка загрузки категорий: \(error)")
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    func loadBankAccount() async {
+        do {
+            bankAccount = try await bankAccountsService.fetchAccount()
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
     
  
     
     func createTransaction() {
-        guard let selectedCategory = selectedCategory,
+        guard let bankAccount, let selectedCategory,
               canCreateTransaction else {
-            print("Missing required fields for transaction creation")
             return
         }
         
+        let selectedDateStr = DateStringConverter.string(from: selectedDate)
+        let request = CreateTransactionRequest(accountId: bankAccount.id, categoryId: selectedCategory.id, amount: String(describing: amount), transactionDate: selectedDateStr, comment: comment)
+    
         Task {
             do {
-                let bankAccount = try await bankAccountsService.fetchAccount()
-                
-                let newBalance = selectedCategory.direction == .income ?
-                    bankAccount.balance + amount :
-                    bankAccount.balance - amount
-                
-                let newTransaction = Transaction(
-                    id: Int.random(in: 1000...9999),
-                    account: bankAccount,
-                    category: selectedCategory,
-                    amount: amount,
-                    trasactionDate: selectedDate,
-                    comment: comment.isEmpty ? nil : comment,
-                    createdAt: Date(),
-                    updatedAt: Date()
-                )
-                
-                try await transactionsService.addTransaction(transaction: newTransaction)
-                try await bankAccountsService.updateAccount(with: newBalance)
+                try await transactionsService.createTransaction(request: request)
+             
                 
             } catch {
-                print("Transaction creation failed: \(error.localizedDescription)")
+                errorMessage = error.localizedDescription
             }
         }
     }
     
     func updateTransaction() {
-        guard let existingTransaction = existingTransaction,
-              let selectedCategory = selectedCategory,
+        guard let bankAccount,
+              let existingTransaction,
+              let selectedCategory,
               canCreateTransaction else {
-            print("Missing required fields for transaction update")
             return
         }
         
         Task {
             do {
-                let bankAccount = try await bankAccountsService.fetchAccount()
-                
-                // Revert the old transaction's effect on balance
-                let oldAmount = existingTransaction.amount
-                let oldDirection = existingTransaction.category.direction
-                let revertedBalance = oldDirection == .income ?
-                    bankAccount.balance - oldAmount :
-                    bankAccount.balance + oldAmount
-                
-                // Apply the new transaction's effect on balance
-                let newBalance = selectedCategory.direction == .income ?
-                    revertedBalance + amount :
-                    revertedBalance - amount
-                
-                let updatedTransaction = Transaction(
-                    id: existingTransaction.id,
-                    account: bankAccount,
-                    category: selectedCategory,
-                    amount: amount,
-                    trasactionDate: selectedDate,
-                    comment: comment.isEmpty ? nil : comment,
-                    createdAt: existingTransaction.createdAt,
-                    updatedAt: Date()
-                )
-                
-                try await transactionsService.updateTransaction(transaction: updatedTransaction)
-                try await bankAccountsService.updateAccount(with: newBalance)
+                let selectedDateStr = DateStringConverter.string(from: selectedDate)
+                let request = UpdateTransactionRequest(id: existingTransaction.id, accountId: bankAccount.id, categoryId: selectedCategory.id, amount: String(describing: amount), transactionDate: selectedDateStr, comment: comment)
+                try await transactionsService.updateTransaction(request: request)
                 
             } catch {
-                print("Transaction update failed: \(error.localizedDescription)")
+                errorMessage = error.localizedDescription
             }
         }
     }
     
     func deleteTransaction() {
-        guard let existingTransaction = existingTransaction else {
-            print("No transaction to delete")
+       guard let existingTransaction else {
             return
         }
         
         Task {
             do {
-                let bankAccount = try await bankAccountsService.fetchAccount()
-                
-                // Revert the transaction's effect on balance
-                let amount = existingTransaction.amount
-                let direction = existingTransaction.category.direction
-                let newBalance = direction == .income ?
-                    bankAccount.balance - amount :
-                    bankAccount.balance + amount
-                
-                try await transactionsService.removeTransaction(transaction: existingTransaction)
-                try await bankAccountsService.updateAccount(with: newBalance)
+                try await transactionsService.removeTransaction(transactionId: existingTransaction.id)
                 
             } catch {
-                print("Transaction deletion failed: \(error.localizedDescription)")
+                errorMessage = error.localizedDescription
             }
         }
     }

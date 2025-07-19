@@ -40,7 +40,7 @@ struct TransactionOperationView: View {
         .navigationBarBackButtonHidden()
         .background(Color(.systemGray6))
         .task {
-            await model.loadCategories()
+            model.onAppear()
         }
         .alert("Удалить транзакцию?", isPresented: $model.showDeleteAlert) {
             Button("Отмена", role: .cancel) { }
@@ -55,6 +55,13 @@ struct TransactionOperationView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text("Нужно заполнить все обязательные поля")
+        }
+        .alert("Ошибка", isPresented: .constant(model.errorMessage != nil)) {
+            Button("OK") {
+                model.errorMessage = nil
+            }
+        } message: {
+            Text(model.errorMessage ?? "")
         }
     }
     

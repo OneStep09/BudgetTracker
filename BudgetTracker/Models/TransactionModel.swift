@@ -30,9 +30,7 @@ extension Transaction {
                    "userId": account.userId,
                    "name": account.name,
                    "balance": NSDecimalNumber(decimal: account.balance).intValue,
-                   "currency": account.currency,
-                   "createdAt": DateStringConverter.getStringUTC(from: account.createdAt),
-                   "updatedAt": DateStringConverter.getStringUTC(from: account.updatedAt)
+                   "currency": account.currency
                ],
                "category": [
                    "id": category.id,
@@ -41,9 +39,9 @@ extension Transaction {
                    "isIncome": category.direction == .income
                ],
                "amount":  NSDecimalNumber(decimal: amount).intValue,
-               "trasactionDate": DateStringConverter.getStringUTC(from: trasactionDate),
-               "createdAt": DateStringConverter.getStringUTC(from: createdAt),
-               "updatedAt": DateStringConverter.getStringUTC(from: updatedAt)
+               "trasactionDate": DateStringConverter.string(from: trasactionDate),
+               "createdAt": DateStringConverter.string(from: createdAt),
+               "updatedAt": DateStringConverter.string(from: updatedAt)
            ]
         
         if let comment {
@@ -65,12 +63,12 @@ extension Transaction {
               let id = transactionDict["id"] as? Int,
               let amount =  transactionDict["amount"] as? Int,
               let transactionDateStr = transactionDict["trasactionDate"] as? String,
-              let transactionDate = DateStringConverter.getDate(from: transactionDateStr),
+              let transactionDate = DateStringConverter.date(from: transactionDateStr),
               let comment = transactionDict["comment"] as? String,
               let createdAtStr = transactionDict["createdAt"] as? String,
-              let createdAt = DateStringConverter.getDate(from: createdAtStr),
+              let createdAt = DateStringConverter.date(from: createdAtStr),
               let updatedAtStr = transactionDict["updatedAt"] as? String,
-              let updatedAt = DateStringConverter.getDate(from: updatedAtStr) else  {
+              let updatedAt = DateStringConverter.date(from: updatedAtStr) else  {
             
             return nil
             
@@ -104,9 +102,9 @@ extension Transaction {
               let balance = accountDict["balance"] as? Int,
               let currencyStr = accountDict["currency"] as? String,
               let createdAtStr = accountDict["createdAt"] as? String,
-              let createdAt = DateStringConverter.getDate(from: createdAtStr),
+              let createdAt = DateStringConverter.date(from: createdAtStr),
               let updatedAtStr = accountDict["updatedAt"] as? String,
-              let updatedAt = DateStringConverter.getDate(from: updatedAtStr) else {
+              let updatedAt = DateStringConverter.date(from: updatedAtStr) else {
             return nil
         }
         
@@ -124,9 +122,9 @@ extension Transaction {
         guard
             let id = Int(csvRow[0]),
             let amount = Decimal(string: csvRow[1]),
-            let trasactionDate = DateStringConverter.getDate(from: csvRow[3]),
-            let createdAt = DateStringConverter.getDate(from: csvRow[4]),
-            let updatedAt = DateStringConverter.getDate(from: csvRow[5]),
+            let trasactionDate = DateStringConverter.date(from: csvRow[3]),
+            let createdAt = DateStringConverter.date(from: csvRow[4]),
+            let updatedAt = DateStringConverter.date(from: csvRow[5]),
             let accountId = Int(csvRow[6]),
             let accountUserId = Int(csvRow[7]),
             let accountBalance = Decimal(string: csvRow[9]),
@@ -142,8 +140,8 @@ extension Transaction {
             name: csvRow[8],
             balance: accountBalance,
             currency: Currency(rawValue: csvRow[10]) ?? Currency.rub,
-            createdAt: DateStringConverter.getDate(from: csvRow[11]) ?? createdAt,
-            updatedAt: DateStringConverter.getDate(from: csvRow[12]) ?? updatedAt
+            createdAt: DateStringConverter.date(from: csvRow[11]) ?? createdAt,
+            updatedAt: DateStringConverter.date(from: csvRow[12]) ?? updatedAt
         )
         
         let direction: Direction = categoryIsIncome ? .income : .outcome

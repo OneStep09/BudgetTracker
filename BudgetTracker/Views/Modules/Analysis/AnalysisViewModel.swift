@@ -9,19 +9,23 @@ import UIKit
 import Combine
 
 // MARK: - View Model
+@MainActor
 class AnalysisViewModel: ObservableObject {
     @Published var startDate = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
     @Published var endDate = Date()
     @Published var totalAmount: Decimal = 0
     @Published var transactions: [TransactionAnalysis] = []
-
+    
     @Published var sortOption: TransactionSortOption = .date
     @Published var isLoading = false
-    @Published var error: Error?
+    @Published var errorMessage: String?
+    
+    private var accountId: Int?
     
     var direction: Direction
     
-    private let transactionsService = TransactionsService()
+    private let transactionsService: TransactionsService
+    private let accountsService: BankAccountsService
     private var cancellables = Set<AnyCancellable>()
     
     
@@ -29,15 +33,29 @@ class AnalysisViewModel: ObservableObject {
         let percentage: Double
         let transaction: Transaction
     }
-
-    init(direction: Direction) {
+    
+    init(direction: Direction,
+         transactionsService: TransactionsService = TransactionsServiceImpl(),
+         accountsService: BankAccountsService = BankAccountsServiceImpl()) {
         self.direction = direction
-        fetchTransactions()
+        self.transactionsService = transactionsService
+        self.accountsService = accountsService
+        fetchAccount()
+    }
+    
+    
+    func fetchAccount() {
+        Task {
+            let account = try await accountsService.fetchAccount()
+            self.accountId = account.id
+            fetchTransactions()
+        }
     }
     
     func fetchTransactions() {
+        guard let accountId else { return }
         isLoading = true
-        error = nil
+        errorMessage = nil
         let calendar = Calendar.current
         
         let startOfDay = calendar.startOfDay(for: startDate)
@@ -46,10 +64,11 @@ class AnalysisViewModel: ObservableObject {
         Task {
             do {
                 let transactions = try await transactionsService.fetchTransactions(
-                    direction: direction,
-                    startDate: startOfDay,
+                    accountId: accountId, startDate: startOfDay,
                     endDate: endOfDay
                 )
+                
+                
                 
                 await MainActor.run {
                     self.processTransactions(transactions)
@@ -57,7 +76,7 @@ class AnalysisViewModel: ObservableObject {
                 }
             } catch {
                 await MainActor.run {
-                    self.error = error
+                    self.errorMessage = error.localizedDescription
                     self.isLoading = false
                 }
             }
@@ -67,8 +86,8 @@ class AnalysisViewModel: ObservableObject {
     private func processTransactions(_ transactions: [Transaction]) {
         let total = transactions.reduce(Decimal(0)) { $0 + $1.amount }
         var analysis: [TransactionAnalysis] = []
-        
-        analysis = transactions.map { transaction in
+        let filteredTransactions = transactions.filter{$0.category.direction == direction}
+        analysis = filteredTransactions.map { transaction in
             let percentage = total > 0 ? Double(truncating: (transaction.amount / total * 100) as NSNumber) : 0
             return TransactionAnalysis(
                 percentage: percentage,
