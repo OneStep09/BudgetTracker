@@ -8,149 +8,115 @@
 import SwiftUI
 
 struct TransactionsHistoryView: View {
+    @State private var model: TransactionsHistoryModel
     
-    // Parameters
-    var direction: Direction
-    
-    var service: TransactionsService
-    
-    // State variables
-    @State private var transactions: [Transaction] = []
-    @State private var startDate = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
-    @State private var endDate = Date()
-    @State private var sum: Decimal = 0
-    @State private var sortOption: TransactionSortOption = .date
-    @State var isAnalysisPresented: Bool = false
-    
-    init(direction: Direction, service: TransactionsService = TransactionsService()) {
-        self.direction = direction
-        self.service = service
-    
+    init(model: TransactionsHistoryModel) {
+        self.model = model
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading) {
-                VStack(alignment: .leading, spacing: 12) {
-                    VStack(spacing: 8) {
-                        CustomPickerView(label: "Начало", selectedDate: $startDate)
-                        
-                        Divider()
-                        
-                        CustomPickerView(label: "Конец", selectedDate: $endDate)
-                        
-                        Divider()
-                        
-                        TransactionsSortingView(sortOption: $sortOption, sortTransactions: sortTransactions)
-                        
-                        Divider()
-                        
-                        HStack {
-                            Text("Сумма")
-                            
-                            Spacer()
-                            
-                            Text("\(sum) ₽")
+        ZStack {
+            if model.isLoading {
+                ProgressView()
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            headerSection
+                            transactionsSection
                         }
                     }
-                    .padding()
-                    .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .padding()
-                    
-                    Text("Операции")
-                        .padding(.horizontal, 28)
-                        .foregroundStyle(Color.secondary)
-                    
-                    // Транзакции
-                    LazyVStack(spacing: 0) {
-                        ForEach(transactions) { transaction in
-                            HistoryTransactionItemView(transaction: transaction)
-                            
-                            Divider()
-                                .padding(.leading, 48)
-                        }
-                    }
-                    .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .padding(.horizontal)
                 }
+                .background(Color(.systemGray6))
             }
         }
-        .background(Color(.systemGray6))
-        
-        .onAppear() {
-            getTransations()
-        }
-        .onChange(of: startDate) {
-            // Если новая дата начала позже конца, обновляем дату конца
-            if startDate > endDate {
-                endDate = startDate
-            }
-            getTransations()
-        }
-        .onChange(of: endDate) {
-            // Если новая дата конца раньше начала, обновляем дату начала
-            if startDate > endDate {
-                startDate = endDate
-            }
-            getTransations()
-        }
-        
         .navigationTitle("Моя история")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(destination: 
-                    AnalysisViewControllerWrapper(direction: direction)
+                    AnalysisViewControllerWrapper(direction: model.direction)
                         .navigationTitle("Анализ")
-//                        .navigationBarTitleDisplayMode(.large)
                         .ignoresSafeArea(.all)
                 ) {
                     Image(systemName: "doc")
                 }
             }
         }
-    }
-    
-    
-    func getTransations() {
-        let calendar = Calendar.current
-        let startOfDay = calendar.startOfDay(for: startDate)
-        let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: endDate) ?? Date()
-        
-        Task {
-            do {
-                let transactions = try await  service.fetchTransactions(direction: direction, startDate: startOfDay , endDate: endOfDay)
-                var sum: Decimal = 0
-                for transaction in transactions {
-                    sum += transaction.amount
-                }
-                
-                await MainActor.run {
-                    self.transactions = transactions
-                    self.sum = sum
-                }
-            } catch {
-                print(error.localizedDescription)
+        .onAppear {
+            model.onViewAppear()
+        }
+        .alert("Ошибка", isPresented: .constant(model.errorMessage != nil)) {
+            Button("OK") {
+                model.errorMessage = nil
+            }
+        } message: {
+            if let errorMessage = model.errorMessage {
+                Text(errorMessage)
             }
         }
     }
     
-    func sortTransactions() {
-        switch sortOption {
-        case .date:
-            transactions = transactions.sorted(by: {$0.trasactionDate < $1.trasactionDate})
-        case .sum:
-            transactions = transactions.sorted(by: {$0.amount < $1.amount})
+    private var headerSection: some View {
+        VStack(spacing: 8) {
+            CustomPickerView(label: "Начало", selectedDate: Binding(
+                get: { model.startDate },
+                set: { model.updateStartDate($0) }
+            ))
+            
+            Divider()
+            
+            CustomPickerView(label: "Конец", selectedDate: Binding(
+                get: { model.endDate },
+                set: { model.updateEndDate($0) }
+            ))
+            
+            Divider()
+            
+            TransactionsSortingView(
+                sortOption: $model.sortOption,
+                sortTransactions: {
+                    model.updateSortOption(model.sortOption)
+                }
+            )
+            
+            Divider()
+            
+            HStack {
+                Text("Сумма")
+                
+                Spacer()
+                
+                Text("\(model.sum) ₽")
+            }
         }
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding()
     }
     
-    
+    private var transactionsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Операции")
+                .padding(.horizontal, 28)
+                .foregroundStyle(Color.secondary)
+            
+            LazyVStack(spacing: 0) {
+                ForEach(model.transactions) { transaction in
+                    HistoryTransactionItemView(transaction: transaction)
+                    
+                    Divider()
+                        .padding(.leading, 48)
+                }
+            }
+            .background(Color(.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal)
+        }
+    }
 }
 
-
-
-
 #Preview {
-    TransactionsHistoryView(direction: .outcome)
+    let model = TransactionsHistoryModel(direction: .outcome)
+    TransactionsHistoryView(model: model)
 }

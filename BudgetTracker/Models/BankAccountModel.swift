@@ -9,12 +9,12 @@ import Foundation
 
 struct BankAccount {
     let id: Int
-    let userId: Int
+    let userId: Int?
     let name: String
     let balance: Decimal
     var currency: Currency
-    let createdAt: Date
-    let updatedAt: Date
+    let createdAt: Date?
+    let updatedAt: Date?
 }
 
 

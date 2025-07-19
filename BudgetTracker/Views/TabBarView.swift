@@ -8,10 +8,17 @@
 import SwiftUI
 
 struct TabBarView: View {
+    
+    
+    var transactionsOutcomeModel: TransactionsListModel
+    var transactionsIncomeModel: TransactionsListModel
+    var accountModel: AccountModel
+    var categoriesModel: CategoriesModel
+    
     var body: some View {
         TabView {
             NavigationStack {
-                TransactionsListView(direction: .outcome)
+                TransactionsListView(model: transactionsOutcomeModel)
             }
             .tabItem {
                 Label("Расходы", image: "expensesTab")
@@ -19,7 +26,7 @@ struct TabBarView: View {
             .tint(Color(.secondary))
             
             NavigationStack {
-                TransactionsListView(direction: .income)
+                TransactionsListView(model: transactionsIncomeModel)
             }
             .tabItem {
                 Label("Доходы", image: "incomeTab")
@@ -28,14 +35,14 @@ struct TabBarView: View {
             
             
             NavigationStack {
-                AccountView()
+                AccountView(model: accountModel)
             }
             .tabItem {
                 Label("Счет", image: "accountTab")
             }
             
             NavigationStack {
-                CategoriesView()
+                CategoriesView(model: categoriesModel)
             }
             .tabItem {
                 Label("Статьи", image: "categoriesTab")
@@ -52,5 +59,8 @@ struct TabBarView: View {
 }
 
 #Preview {
-    TabBarView()
+    TabBarView(transactionsOutcomeModel: TransactionsListModel(direction: .outcome),
+               transactionsIncomeModel: TransactionsListModel(direction: .income),
+               accountModel: AccountModel(),
+               categoriesModel: CategoriesModel())
 }
