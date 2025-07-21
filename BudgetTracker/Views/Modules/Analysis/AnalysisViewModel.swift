@@ -20,7 +20,7 @@ class AnalysisViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    private var accountId: Int?
+    var account: BankAccount?
     
     var direction: Direction
     
@@ -47,13 +47,13 @@ class AnalysisViewModel: ObservableObject {
     func fetchAccount() {
         Task {
             let account = try await accountsService.fetchAccount()
-            self.accountId = account.id
+            self.account = account
             fetchTransactions()
         }
     }
     
     func fetchTransactions() {
-        guard let accountId else { return }
+        guard let account else { return }
         isLoading = true
         errorMessage = nil
         let calendar = Calendar.current
@@ -64,7 +64,7 @@ class AnalysisViewModel: ObservableObject {
         Task {
             do {
                 let transactions = try await transactionsService.fetchTransactions(
-                    accountId: accountId, startDate: startOfDay,
+                    accountId: account.id, startDate: startOfDay,
                     endDate: endOfDay
                 )
                 

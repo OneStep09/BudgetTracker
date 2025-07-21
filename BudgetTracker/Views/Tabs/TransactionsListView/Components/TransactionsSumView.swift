@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TransactionsSumView: View {
     let sum: Decimal
+    let currencySymbol : String
     var body: some View {
         HStack(alignment: .center) {
             Text("Всего")
@@ -17,7 +18,7 @@ struct TransactionsSumView: View {
             
             Spacer()
             
-            Text("\(sum) ₽")
+            Text("\(sum) \(currencySymbol)")
                 .font(.body)
                 .foregroundStyle(Color.primary)
         }

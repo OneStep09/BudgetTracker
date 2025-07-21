@@ -126,7 +126,7 @@ struct TransactionOperationView: View {
                     model.amountText = model.formatAmountInput(newValue)
                 }
             
-            Text("₽")
+            Text("\(model.bankAccount?.currency.symbol ?? "")")
                 .foregroundColor(.secondary)
         }
     }

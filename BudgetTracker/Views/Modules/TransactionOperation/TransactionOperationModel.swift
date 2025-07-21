@@ -20,7 +20,7 @@ final class TransactionOperationModel {
     var existingTransaction: Transaction?
     var direction: Direction
     var type: TransactionOperation = .create
-    private var bankAccount: BankAccount?
+    var bankAccount: BankAccount?
     
     private let categoriesService: CategoriesService
     private let transactionsService: TransactionsService

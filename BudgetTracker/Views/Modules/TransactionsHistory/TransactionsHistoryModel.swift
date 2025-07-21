@@ -24,7 +24,7 @@ final class TransactionsHistoryModel {
     var sortOption: TransactionSortOption = .date
     var isLoading: Bool = false
     var errorMessage: String?
-    var accountId: Int?
+    var account: BankAccount?
     
     let direction: Direction
     private let transactionsService: TransactionsService
@@ -88,7 +88,7 @@ final class TransactionsHistoryModel {
             do {
                 let account = try await bankAccountService.fetchAccount()
                 await MainActor.run {
-                    self.accountId = account.id
+                    self.account = account
                 }
                 loadTransactions()
             } catch {
@@ -101,7 +101,7 @@ final class TransactionsHistoryModel {
     }
     
     private func loadTransactions() {
-        guard let accountId else { return }
+        guard let account else { return }
         
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: startDate)
@@ -113,7 +113,7 @@ final class TransactionsHistoryModel {
         Task {
             do {
                 let fetchedTransactions = try await transactionsService.fetchTransactions(
-                    accountId: accountId,
+                    accountId: account.id,
                     startDate: startOfDay,
                     endDate: endOfDay
                 )

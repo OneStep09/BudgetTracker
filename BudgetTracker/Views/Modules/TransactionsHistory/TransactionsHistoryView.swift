@@ -86,7 +86,7 @@ struct TransactionsHistoryView: View {
                 
                 Spacer()
                 
-                Text("\(model.sum) ₽")
+                Text("\(model.sum) \(model.account?.currency.symbol ?? "")")
             }
         }
         .padding()
