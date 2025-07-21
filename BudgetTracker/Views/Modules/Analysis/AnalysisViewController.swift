@@ -175,7 +175,7 @@ private extension AnalysisViewController {
             
         case .totalAmount:
             let cell = tableView.dequeueReusableCell(withIdentifier: TotalAmountCell.identifier, for: indexPath) as! TotalAmountCell
-            cell.configure(amount: viewModel.totalAmount)
+            cell.configure(amount: viewModel.totalAmount, currencySymbol: viewModel.account?.currency.symbol ?? "")
             return cell
         }
     }

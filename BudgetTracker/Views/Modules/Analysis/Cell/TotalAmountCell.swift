@@ -53,12 +53,12 @@ class TotalAmountCell: UITableViewCell {
         ])
     }
     
-    func configure(amount: Decimal) {
+    func configure(amount: Decimal, currencySymbol: String) {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.groupingSeparator = " "
         
         let formattedAmount = formatter.string(from: amount as NSNumber) ?? "0"
-        amountLabel.text = "\(formattedAmount) ₽"
+        amountLabel.text = "\(formattedAmount) \(currencySymbol)"
     }
 }

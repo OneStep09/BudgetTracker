@@ -16,7 +16,7 @@ final class TransactionsListModel {
     var selectedTransaction: Transaction? = nil
     var isLoading: Bool = false
     var errorMessage: String?
-    var accountId: Int?
+    var account: BankAccount?
     
     let direction: Direction
     private let transactionsService: TransactionsService
@@ -53,7 +53,7 @@ final class TransactionsListModel {
     // MARK: - Public Methods
     func loadTransactions() {
         
-        guard let accountId else { return }
+        guard let account else { return }
         let calendar = Calendar.current
         let now = Date()
         let startOfDay = calendar.startOfDay(for: now)
@@ -65,7 +65,7 @@ final class TransactionsListModel {
         Task {
             do {
                 let fetchedTransactions = try await transactionsService.fetchTransactions(
-                    accountId: accountId,
+                    accountId: account.id,
                     startDate: startOfDay,
                     endDate: endOfDay
                 )
@@ -93,7 +93,7 @@ final class TransactionsListModel {
         Task {
             do {
                 let account = try await bankAccountService.fetchAccount()
-                self.accountId = account.id
+                self.account = account
                 loadTransactions()
                 
             } catch let error  {

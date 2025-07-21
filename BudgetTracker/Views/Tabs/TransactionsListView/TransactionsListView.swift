@@ -75,7 +75,8 @@ struct TransactionsListView: View {
                 }
             )
             Divider()
-            TransactionsSumView(sum: model.sum)
+            TransactionsSumView(sum: model.sum,
+                                currencySymbol: model.account?.currency.symbol ?? "")
         }
         .padding()
         .background(Color(.systemBackground))
