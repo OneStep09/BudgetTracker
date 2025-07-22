@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-
 @Observable
 final class TransactionOperationModel {
     var categories: [Category] = []

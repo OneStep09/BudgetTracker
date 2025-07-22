@@ -69,6 +69,13 @@ class AnalysisViewController: UIViewController {
             }
             .store(in: &cancellables)
         
+        viewModel.$categoryAnalysis
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.tableView.reloadData()
+            }
+            .store(in: &cancellables)
+        
         viewModel.$totalAmount
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -182,6 +189,7 @@ private extension AnalysisViewController {
     
     func configureChartCell(at indexPath: IndexPath, in tableView: UITableView) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: ChartCell.identifier, for: indexPath) as! ChartCell
+        cell.configure(with: viewModel.categoryAnalysis)
         return cell
     }
     
@@ -229,7 +237,7 @@ enum AnalysisSection: Int, CaseIterable {
         case .controls:
             return 50
         case .chart:
-            return 200
+            return 190
         case .transactions:
             return 60
         }
