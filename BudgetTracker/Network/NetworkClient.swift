@@ -14,11 +14,10 @@ class NetworkClient {
     private let baseURL: URL = URL(string: "https://shmr-finance.ru")!
     private let apiPrefix = "/api/v1/"
     private let session = URLSession.shared
-    private let token = "" // Сюда свой токен
+    private let token = "hxJAcmx39VoC5qyGgrViLT3p" // Сюда свой токен
     
     static let shared = NetworkClient()
    
-    
     
     // MARK: - Request
     func request<T: Encodable, U: Decodable>(
