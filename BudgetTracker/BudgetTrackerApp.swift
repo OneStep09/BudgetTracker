@@ -6,15 +6,26 @@
 //
 
 import SwiftUI
-
+import LaunchScreen
 @main
 struct BudgetTrackerApp: App {
+    @StateObject private var launchState = LaunchState()
     var body: some Scene {
         WindowGroup {
-            TabBarView(transactionsOutcomeModel: TransactionsListModel(direction: .outcome),
-                       transactionsIncomeModel: TransactionsListModel(direction: .income),
-                       accountModel: AccountModel(),
-                       categoriesModel: CategoriesModel())
+            
+            if launchState.isFinished {
+                TabBarView(transactionsOutcomeModel: TransactionsListModel(direction: .outcome),
+                           transactionsIncomeModel: TransactionsListModel(direction: .income),
+                           accountModel: AccountModel(),
+                           categoriesModel: CategoriesModel())
+            } else {
+                LaunchAnimationView()
+                    .environmentObject(launchState)
+            }
+           
         }
     }
 }
+
+
+
