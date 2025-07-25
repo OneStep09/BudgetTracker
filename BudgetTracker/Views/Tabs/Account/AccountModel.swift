@@ -13,9 +13,11 @@ final class AccountModel {
     var mode: AccountViewMode = .view
     var editedBalance: String = ""
     var editedCurrency: Currency = .rub
+    var dailyBalances: [DailyBalance] = []
     var errorMessage: String?
     
     private let bankAccountsService: BankAccountsService
+    private let transactionsService: TransactionsService
     
     var currentAccount: BankAccount? {
         if case .success(let account) = state {
@@ -37,8 +39,10 @@ final class AccountModel {
     
     // MARK: - Initialization
     
-    init(bankAccountsService: BankAccountsService = BankAccountsServiceImpl()) {
+    init(bankAccountsService: BankAccountsService = BankAccountsServiceImpl(),
+         transactionsService: TransactionsService = TransactionsServiceImpl()) {
         self.bankAccountsService = bankAccountsService
+        self.transactionsService = transactionsService
     }
     
     // MARK: - Public Methods
@@ -46,6 +50,7 @@ final class AccountModel {
     func onViewAppear() {
         Task {
             await fetchAccount()
+            await fetchTransactions()
         }
     }
     
@@ -112,11 +117,79 @@ final class AccountModel {
         }
     }
     
+    
+    private func fetchTransactions() async {
+        guard let account = currentAccount else { return }
+        
+        let calendar = Calendar.current
+        let endDate = Date()
+        let startDate = calendar.date(byAdding: .month, value: -1, to: endDate) ?? endDate
+        
+        do {
+            let transactions = try await transactionsService.fetchTransactions(
+                accountId: account.id,
+                startDate: startDate,
+                endDate: endDate
+            )
+            
+            let balances = calculateDailyBalances(
+                transactions: transactions,
+                startDate: startDate,
+                endDate: endDate,
+                currentBalance: account.balance
+            )
+            
+            await MainActor.run {
+                self.dailyBalances = balances.map{ DailyBalance(date: DateStringConverter.getDate(from: $0.key,
+                                                format: .yearMonthDate) ?? Date(),
+                                                balance: $0.value)}.sorted{$0.date < $1.date}
+            }
+        } catch {
+            await MainActor.run {
+                self.errorMessage = "Не удалось загрузить транзакции: \(error.localizedDescription)"
+            }
+        }
+    }
+    
+    private func calculateDailyBalances(transactions: [Transaction], startDate: Date, endDate: Date, currentBalance: Decimal) -> [String: Decimal] {
+        var balanceByDay: [String: Decimal] = [:]
+        var transactionsByDay: [String: Decimal] = [:]
+        // Групировка операции по дням
+        for transaction in transactions {
+            let dateString = DateStringConverter.getString(from: transaction.trasactionDate, formatType: .yearMonthDate)
+            
+            if transactionsByDay[dateString] == nil {
+                transactionsByDay[dateString] = 0
+            }
+            
+            if transaction.category.direction == .outcome {
+                transactionsByDay[dateString]! -= transaction.amount
+            } else {
+                transactionsByDay[dateString]! += transaction.amount
+            }
+        }
+        
+        
+        var currentDate = endDate
+        var runningBalance = currentBalance
+       
+        while currentDate > startDate {
+            let currentDateStr = DateStringConverter.dateFormatter.string(from: currentDate)
+            balanceByDay[currentDateStr] = runningBalance
+            runningBalance -= transactionsByDay[currentDateStr] ?? 0
+            currentDate = Calendar.current.date(byAdding: .day, value: -1, to: currentDate)!
+        }
+        
+        return balanceByDay
+    }
+    
+    
+    
     private func updateAccount(_ account: BankAccount) async {
         do {
-            try await bankAccountsService.updateAccount(account: account)
+            let upatedAccount = try await bankAccountsService.updateAccount(account: account)
             await MainActor.run {
-                self.state = .success(account)
+                self.state = .success(upatedAccount)
                 self.mode = .view
                 self.editedBalance = ""
             }
@@ -154,4 +227,18 @@ enum AccountViewState {
 enum AccountViewMode {
     case view
     case edit
+}
+
+struct DailyBalance: Identifiable {
+    let id = UUID()
+    let date: Date
+    let balance: Decimal
+    
+    var balanceDouble: Double {
+        NSDecimalNumber(decimal: balance).doubleValue
+    }
+    
+    var isPositive: Bool {
+        balance >= 0
+    }
 }

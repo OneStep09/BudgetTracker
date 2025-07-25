@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4D0CBBD42E33E54C0011564D /* LaunchScreen in Frameworks */ = {isa = PBXBuildFile; productRef = 4D0CBBD32E33E54C0011564D /* LaunchScreen */; };
+		4DA8691E2E2E6E43003473FB /* PieChart in Frameworks */ = {isa = PBXBuildFile; productRef = 4DA8691D2E2E6E43003473FB /* PieChart */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		4D735F0F2DF352B100A940E7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,9 +29,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4D0CBBD22E33E39D0011564D /* LaunchScreen */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LaunchScreen; sourceTree = "<group>"; };
 		4D735EFE2DF352AE00A940E7 /* BudgetTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BudgetTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D735F0E2DF352B100A940E7 /* BudgetTrackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BudgetTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D735F182DF352B100A940E7 /* BudgetTrackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BudgetTrackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4DA8691B2E2E5FD7003473FB /* Utilities */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Utilities; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +59,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4DA8691E2E2E6E43003473FB /* PieChart in Frameworks */,
+				4D0CBBD42E33E54C0011564D /* LaunchScreen in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,9 +84,12 @@
 		4D735EF52DF352AE00A940E7 = {
 			isa = PBXGroup;
 			children = (
+				4D0CBBD22E33E39D0011564D /* LaunchScreen */,
+				4DA8691B2E2E5FD7003473FB /* Utilities */,
 				4D735F002DF352AE00A940E7 /* BudgetTracker */,
 				4D735F112DF352B100A940E7 /* BudgetTrackerTests */,
 				4D735F1B2DF352B100A940E7 /* BudgetTrackerUITests */,
+				4DA8691C2E2E6E43003473FB /* Frameworks */,
 				4D735EFF2DF352AE00A940E7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +102,13 @@
 				4D735F182DF352B100A940E7 /* BudgetTrackerUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		4DA8691C2E2E6E43003473FB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +131,8 @@
 			);
 			name = BudgetTracker;
 			packageProductDependencies = (
+				4DA8691D2E2E6E43003473FB /* PieChart */,
+				4D0CBBD32E33E54C0011564D /* LaunchScreen */,
 			);
 			productName = BudgetTracker;
 			productReference = 4D735EFE2DF352AE00A940E7 /* BudgetTracker.app */;
@@ -195,6 +216,8 @@
 			);
 			mainGroup = 4D735EF52DF352AE00A940E7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4D735EFF2DF352AE00A940E7 /* Products */;
 			projectDirPath = "";
@@ -558,6 +581,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4D0CBBD32E33E54C0011564D /* LaunchScreen */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LaunchScreen;
+		};
+		4DA8691D2E2E6E43003473FB /* PieChart */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PieChart;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4D735EF62DF352AE00A940E7 /* Project object */;
 }

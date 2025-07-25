@@ -28,7 +28,11 @@ class SelectDateCell: UITableViewCell {
         picker.translatesAutoresizingMaskIntoConstraints = false
         picker.layer.cornerRadius = 8
         picker.clipsToBounds = true
-        picker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+        // Убираем старый target
+        // picker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+        // Добавляем новые targets
+        picker.addTarget(self, action: #selector(dateEditingDidBegin(_:)), for: .editingDidBegin)
+        picker.addTarget(self, action: #selector(dateEditingDidEnd(_:)), for: .editingDidEnd)
         return picker
     }()
     
@@ -59,7 +63,14 @@ class SelectDateCell: UITableViewCell {
         ])
     }
     
-    @objc private func dateChanged(_ sender: UIDatePicker) {
+    @objc private func dateEditingDidBegin(_ sender: UIDatePicker) {
+        currentDate = sender.date
+    }
+    
+    @objc private func dateEditingDidEnd(_ sender: UIDatePicker) {
+        if currentDate == sender.date {
+            return 
+        }
         currentDate = sender.date
         dateChangeCallback?(currentDate)
     }

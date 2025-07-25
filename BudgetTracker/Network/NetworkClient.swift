@@ -19,7 +19,6 @@ class NetworkClient {
     static let shared = NetworkClient()
    
     
-    
     // MARK: - Request
     func request<T: Encodable, U: Decodable>(
         endpoint: String,

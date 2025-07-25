@@ -15,6 +15,7 @@ class AnalysisViewModel: ObservableObject {
     @Published var endDate = Date()
     @Published var totalAmount: Decimal = 0
     @Published var transactions: [TransactionAnalysis] = []
+    @Published var categoryAnalysis: [CategoryAnalysis] = []
     
     @Published var sortOption: TransactionSortOption = .date
     @Published var isLoading = false
@@ -32,6 +33,13 @@ class AnalysisViewModel: ObservableObject {
     struct TransactionAnalysis {
         let percentage: Double
         let transaction: Transaction
+    }
+
+    struct CategoryAnalysis {
+        let category: Category
+        let totalAmount: Decimal
+        let percentage: Double
+        let transactionCount: Int
     }
     
     init(direction: Direction,
@@ -84,9 +92,10 @@ class AnalysisViewModel: ObservableObject {
     }
     
     private func processTransactions(_ transactions: [Transaction]) {
-        let total = transactions.reduce(Decimal(0)) { $0 + $1.amount }
-        var analysis: [TransactionAnalysis] = []
         let filteredTransactions = transactions.filter{$0.category.direction == direction}
+        let total = filteredTransactions.reduce(Decimal(0)) { $0 + $1.amount }
+        
+        var analysis: [TransactionAnalysis] = []
         analysis = filteredTransactions.map { transaction in
             let percentage = total > 0 ? Double(truncating: (transaction.amount / total * 100) as NSNumber) : 0
             return TransactionAnalysis(
@@ -95,8 +104,22 @@ class AnalysisViewModel: ObservableObject {
             )
         }
         
+        // Group transactions by category
+        let groupedByCategory = Dictionary(grouping: filteredTransactions) { $0.category }
+        let categoryAnalysis = groupedByCategory.map { (category, categoryTransactions) in
+            let categoryTotal = categoryTransactions.reduce(Decimal(0)) { $0 + $1.amount }
+            let percentage = total > 0 ? Double(truncating: (categoryTotal / total * 100) as NSNumber) : 0
+            return CategoryAnalysis(
+                category: category,
+                totalAmount: categoryTotal,
+                percentage: percentage,
+                transactionCount: categoryTransactions.count
+            )
+        }.sorted { $0.totalAmount > $1.totalAmount }
+        
         self.totalAmount = total
         self.transactions = analysis
+        self.categoryAnalysis = categoryAnalysis
         sortAnalysis()
     }
     

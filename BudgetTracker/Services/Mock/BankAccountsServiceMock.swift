@@ -8,6 +8,7 @@
 import Foundation
 
 final class BankAccountsServiceMock: BankAccountsService {
+  
     
     private var bankAccount = BankAccount(id: 0,
                                           userId: 0,

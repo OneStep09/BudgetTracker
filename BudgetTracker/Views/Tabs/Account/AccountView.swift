@@ -62,6 +62,15 @@ struct AccountView: View {
         switch model.mode {
         case .view:
             AccountInfoView(balance: account.balance, currency: account.currency)
+            
+            if !model.dailyBalances.isEmpty {
+                BalanceChartView(dailyBalances: model.dailyBalances,
+                                 currency: model.currentAccount?.currency.symbol ?? "")
+            }
+            
+            Spacer()
+            
+            
         case .edit:
             EditAccountView(
                 balanceText: $model.editedBalance,

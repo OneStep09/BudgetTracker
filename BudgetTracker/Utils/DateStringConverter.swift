@@ -35,8 +35,8 @@ class DateStringConverter {
         return iso8601.date(from: string)
     }
     
-
     
+
     public static func string(from date: Date) -> String {
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -44,6 +44,10 @@ class DateStringConverter {
         return dateFormatter.string(from: date)
     }
     
+    public static func getDate(from string: String, format: DateFormatType) -> Date? {
+        dateFormatter.dateFormat = format.rawValue
+        return dateFormatter.date(from: string)
+    }
     
     public static func getString(from date: Date, formatType: DateFormatType = .iso8601) -> String {
         dateFormatter.dateFormat = formatType.rawValue
